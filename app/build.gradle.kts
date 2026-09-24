@@ -13,16 +13,15 @@ plugins {
 // 报告对运行时无影响，需要诊断时再打开。
 composeCompiler {
     // reportsDestination = layout.projectDirectory.dir("compose-reports")
-    // v27.5 性能修复（用户连续多轮反馈"所有界面上下滑动都卡"）：
+    // v27.5 性能修复（用户连续多轮反馈“所有界面上下滑动都卡”）：
     // 1. 启用 OptimizeNonSkippingGroups：将非 skippable 的 Composable group 优化为不生成独立 group，
     //    减少 currentComposer.startGroup/endGroup 开销。4 个屏幕都有大量非 skippable Composable，
     //    group 维护开销在每次 fling 帧都成倍放大。
-    // 2. stabilityConfigurationFiles：声明 AppContainer 等依赖容器为 Stable，避免被 Compose 推断为
-    //    Unstable 导致屏幕根 Composable 无法 skip。
     featureFlags.addAll(
         org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.OptimizeNonSkippingGroups,
     )
-    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability-config.conf"))
+    // v28.0: stabilityConfigurationFiles 需要 Kotlin 2.1.0+，当前版本 2.0.21 不支持，暂时禁用
+    // stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability-config.conf"))
 }
 
 android {
