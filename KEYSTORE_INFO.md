@@ -1,0 +1,118 @@
+# 🔑 JM Reader 签名密钥信息
+
+⚠️ **重要：请妥善保存此文件，不要分享给他人！**
+
+## 签名密钥已生成
+
+生成时间：2024-09-24
+有效期：27 年（10000 天）
+
+## GitHub Secrets 配置信息
+
+在 GitHub 仓库中配置以下 4 个 Secrets（Settings → Secrets and variables → Actions → New repository secret）：
+
+### 1. KEYSTORE_BASE64
+```
+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
+48DlAGxCuPACAicQ
+```
+
+### 2. JM_KEYSTORE_PW
+```
+jmreader2024
+```
+
+### 3. JM_KEY_PW
+```
+jmreader2024
+```
+
+### 4. JM_KEY_ALIAS
+```
+jmreader
+```
+
+## 配置步骤
+
+1. 进入你的 GitHub 仓库
+2. 点击 **Settings** → **Secrets and variables** → **Actions**
+3. 点击 **New repository secret**
+4. 依次添加上面 4 个 secret（名称必须完全一致）
+5. 推送代码，GitHub Actions 会自动构建 Release APK
+
+## 密钥文件位置
+
+- Keystore 文件：`/workspace/jmtt.apk/release.keystore`
+- Base64 文本：`/workspace/jmtt.apk/keystore_base64.txt`
+- 本说明文件：`/workspace/jmtt.apk/KEYSTORE_INFO.md`
+
+## 安全提醒
+
+⚠️ **请务必：**
+- 保存此文件的备份（可以复制到安全的地方）
+- 不要将 `release.keystore` 文件提交到 Git 仓库
+- 不要在公开场合分享这些密码和 base64 内容
+- 如果密钥丢失，将无法更新已发布的应用
+
+✅ **已自动添加到 .gitignore：**
+```
+release.keystore
+keystore_base64.txt
+KEYSTORE_INFO.md
+```
+
+这些文件不会被提交到 Git 仓库中。
+
+---
+
+生成于：2024-09-24
+工具：keytool (OpenJDK 17)
+算法：RSA 2048-bit
+签名：SHA256withRSA
