@@ -101,11 +101,11 @@ fun ReaderScreen(
     comicId: String,
     chapterId: String,
     onBack: () -> Unit,
-    onOpenLogs: () -> Unit = {},
+    onOpenLogs: () -> Unit = {}
+) {
     val vm: ReaderViewModel = hiltViewModel<ReaderViewModel, ReaderViewModel.Factory> { factory ->
         factory.create(comicId, chapterId)
     }
-    val vm: ReaderViewModel = viewModel(factory = ReaderVMFactory(container, comicId, chapterId))
     val state by vm.state.collectAsState()
     // v27.5 性能优化：用 cachedSnapshot 作为初始值，避免 null → 默认 → 真实 两轮重组
     val settings by container.settingsStore.settings.collectAsState(initial = container.settingsStore.cachedSnapshot)

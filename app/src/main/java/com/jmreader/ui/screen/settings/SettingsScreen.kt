@@ -140,9 +140,9 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     container: AppContainer,
     onOpenLogs: () -> Unit = {},
-    onOpenDomains: () -> Unit = {},
+    onOpenDomains: () -> Unit = {}
+) {
     val vm: SettingsViewModel = hiltViewModel()
-    val vm: SettingsViewModel = viewModel(factory = SettingsVMFactory(container))
     // v27.5 性能优化：用 cachedSnapshot 作为初始值，避免 null → 默认 → 真实 两轮重组
     val settings by vm.settings.collectAsState(initial = vm.cachedSnapshot)
     val blockedTags by vm.blockedTags.collectAsState(initial = emptySet())

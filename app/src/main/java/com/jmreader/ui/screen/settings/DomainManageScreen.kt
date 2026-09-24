@@ -82,8 +82,12 @@ data class DomainItem(
     val isCustom: Boolean = false,    // 用户自定义（可删）
 )
 
+@Composable
+fun DomainManageScreen(
+    container: AppContainer,
+    onBack: () -> Unit
+) {
     val vm: DomainViewModel = hiltViewModel()
-    val vm: DomainViewModel = viewModel(factory = DomainVMFactory(container))
     val items = vm.items
     val snackbar = remember { SnackbarHostState() }
 
