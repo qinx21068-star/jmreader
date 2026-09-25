@@ -23,8 +23,6 @@ import kotlinx.coroutines.launch
  * 
  * v28.0 已迁移到 Hilt，使用 Assisted Injection 支持运行时参数
  */
-@HiltViewModel(assistedFactory = ReaderViewModel.Factory::class)
-
 data class ReaderUiState(
     val loading: Boolean = true,
     val imageFiles: List<String> = emptyList(),
@@ -37,6 +35,7 @@ data class ReaderUiState(
     val error: String? = null,
 )
 
+@HiltViewModel(assistedFactory = ReaderViewModel.Factory::class)
 class ReaderViewModel @AssistedInject constructor(
     private val container: AppContainer,
     @Assisted private val comicId: String,
