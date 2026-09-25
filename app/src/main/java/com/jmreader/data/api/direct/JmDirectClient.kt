@@ -730,8 +730,8 @@ class JmDirectClient(
      * @param uid  用户 ID；非空=查该用户的评论（个人评论页），空=不限用户
      * @param page 页码（从 1 开始）
      *
-     * 响应结构：{"list":[Comment...], "total":N}
-     * Comment 字段：AID/CID/UID/nickname/likes/addtime/content(HTML)/photo/name/expinfo{level}/replys[Comment]
+     * 响应结构：JSON 对象，包含 list（评论数组）和 total（总数）。
+     * Comment 字段：AID/CID/UID/nickname/likes/addtime/content（HTML）/photo/name/expinfo（level）/replys（Comment 列表）
      */
     suspend fun forum(mode: String?, aid: String?, uid: String?, page: Int): JmCommentPageDto {
         // 与 jasmine 一致：null 参数不带（禁漫 API 对空值敏感）
