@@ -295,9 +295,7 @@ class ReaderViewModel @AssistedInject constructor(
     }
 }
 
-
     @AssistedFactory
     interface Factory {
         fun create(comicId: String, initialChapterId: String): ReaderViewModel
     }
-}
