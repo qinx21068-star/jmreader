@@ -717,22 +717,9 @@ class JmDirectClient(
         )
     }
 
-    /**
-     * 评论/讨论区接口（/forum，移植自 jasmine forum 方法）。
-     *
-     * v27.9：替代之前的 HTML 抓取方案（JmWebFetcher + jm365.work 重定向获取"无 CF 域名"，
-     * 该通道不稳定——CF 拦截/换域/超时频繁，导致评论区/讨论区"根本加载不出来"）。
-     * /forum 走与 /search、/album 相同的 [reqApi] 通道（token 鉴权 + AES 解密 + 域名轮换），
-     * 已验证稳定，与 jasmine 客户端同款。
-     *
-     * @param mode 评论分类，禁漫用 "manhua" 表示漫画评论
-     * @param aid  本子 ID；非空=查该本子的评论（评论区），空=全局评论流（讨论区）
-     * @param uid  用户 ID；非空=查该用户的评论（个人评论页），空=不限用户
-     * @param page 页码（从 1 开始）
-     *
-     * 响应结构：JSON 对象，包含 list（评论数组）和 total（总数）。
-     * Comment 字段：AID/CID/UID/nickname/likes/addtime/content（HTML）/photo/name/expinfo（level）/replys（Comment 列表）
-     */
+    // 评论/讨论��接口，使用 /forum JSON API。
+    // mode 为空时表示全局评论流，aid/uid 可选，page 从 1 开始。
+    // 响应包含 list 评论数组和 total 总数。
     suspend fun forum(mode: String?, aid: String?, uid: String?, page: Int): JmCommentPageDto {
         // 与 jasmine 一致：null 参数不带（禁漫 API 对空值敏感）
         val params = mutableMapOf("page" to page.toString())
