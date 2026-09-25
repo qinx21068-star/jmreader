@@ -519,8 +519,7 @@ abstract class BaseListViewModel(protected val container: AppContainer) : ViewMo
         /** 屏蔽命中后的处理：HIDE 移除，COVER_ONLY 保留并记入 coverHidden。返回 true 表示从列表移除。 */
         fun handleBlocked(comic: ComicBriefDto): Boolean =
             if (coverOnly) {
-                // v28.0: coverHidden 在 coverOnly=true 时必定非 null，但用 ?. 更清晰
-                coverHidden?.let { if (comic.id.isNotEmpty()) it.add(comic.id) }
+                if (comic.id.isNotEmpty()) coverHidden!!.add(comic.id)
                 false // 保留条目
             } else {
                 true // 移除条目

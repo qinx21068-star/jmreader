@@ -1,23 +1,15 @@
 package com.jmreader.ui.screen.favorites
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.jmreader.data.AppContainer
 import com.jmreader.data.dto.ComicBriefDto
 import com.jmreader.data.repository.Resource
 import com.jmreader.ui.viewmodel.BaseListViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
-import javax.inject.Inject
 
-/**
- * 服务器收藏 ViewModel - 显示用户在禁漫站点的收藏列表
- * 
- * v28.0 已迁移到 Hilt
- */
-@HiltViewModel
-class ServerFavoritesViewModel @Inject constructor(
-    private val container: AppContainer,
-) : BaseListViewModel(container) {
-    
+class ServerFavoritesViewModel(container: AppContainer) : BaseListViewModel(container) {
     init { refresh() }
 
     override suspend fun loadPage(page: Int): Resource<Pair<List<ComicBriefDto>, Int?>> {
@@ -34,4 +26,10 @@ class ServerFavoritesViewModel @Inject constructor(
             Resource.Loading -> Resource.Loading
         }
     }
+}
+
+class ServerFavoritesVMFactory(private val container: AppContainer) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        ServerFavoritesViewModel(container) as T
 }

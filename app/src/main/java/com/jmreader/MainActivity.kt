@@ -25,7 +25,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import dagger.hilt.android.AndroidEntryPoint
 import com.jmreader.notification.ReadLaterServiceController
 import com.jmreader.ui.components.DisclaimerDialog
 import com.jmreader.ui.nav.JMApp
@@ -36,11 +35,9 @@ import kotlinx.coroutines.launch
 
 /**
  * v27.5 #28：MainActivity 改为继承 FragmentActivity 以支持 BiometricPrompt。
- * v28.0：添加 @AndroidEntryPoint 支持 Hilt 依赖注入。
  *
  * ComponentActivity 是 FragmentActivity 的父类，所以原有 setContent / Compose 行为完全兼容。
  */
-@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     /** 是否强制最高刷新率，由设置页写入；启动时为 false，Compose 起来后由 settings flow 更新。 */

@@ -49,7 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -82,14 +83,278 @@ private val ORDERS = listOf(
     Order("picture", "图片数"),
 )
 
-/**
- * SearchViewModel 已迁移到独立文件：SearchViewModel.kt
- * v28.0 Phase 1.1 - 使用 Hilt 依赖注入
- */
+class SearchViewModel(container: AppContainer) : BaseListViewModel(container) {
+    var query by mutableStateOf("")
+        private set
+    var order by mutableStateOf("latest")
+        private set
 
-/**
- * SearchVMFactory 已移除 - v28.0 使用 hiltViewModel() 自动注入
- */
+    private var debounce: Job? = null
+    /** v27.14：当前是否处于批量搜索模式（用于阻止 loadMore 触发分页）。 */
+    private var batchMode: Boolean = false
+    /**
+     * v27.14：批量搜索的当前 Job。新搜索启动前取消旧 Job，
+     * 避免旧 searchBatch 完成后调用 setBatchResult 覆盖新结果（竞态）。
+     */
+    private var searchBatchJob: Job? = null
+
+    fun onQueryChange(q: String) {
+        query = q
+        debounce?.cancel()
+        // 空关键词不发起请求，直接清空列表回到初始态，避免无意义转圈
+        if (q.isBlank()) {
+            batchMode = false
+            // 取消尚未完成的批量搜索，避免清空后又写回旧批量结果
+            searchBatchJob?.cancel()
+            _state.value = _state.value.copy(
+                items = emptyList(),
+                refreshing = false,
+                loadingMore = false,
+                error = null,
+                page = 1,
+                endReached = false,
+                coverHiddenIds = emptySet(),
+            )
+            return
+        }
+        debounce = viewModelScope.launch {
+            delay(400)
+            // 关键修复：debounce 自动搜索不写入历史，避免输入中途停顿污染历史
+            // （输入 "abc" 中途停顿会产生 "a"、"ab"、"abc" 三个历史项）
+            // 只有用户明确触发搜索（searchDirect：点历史词 / IME 搜索键）才记录历史
+            val batchIds = parseBatchIds(q)
+            if (batchIds != null) {
+                searchBatch(batchIds, saveHistory = false)
+            } else {
+                // v27.14：从批量模式切回普通搜索时取消尚未完成的批量搜索，
+                // 避免其 setBatchResult 在 refresh 之后覆盖普通搜索结果。
+                if (batchMode) {
+                    batchMode = false
+                    searchBatchJob?.cancel()
+                }
+                refresh()
+            }
+        }
+    }
+
+    /** 直接用历史词搜索（点击历史词条触发，立即搜索并存历史）。 */
+    fun searchDirect(q: String) {
+        query = q
+        debounce?.cancel()
+        // v27.14：批量 ID 搜索（输入多个 JM 号，空格/逗号/句号分隔）
+        val batchIds = parseBatchIds(q)
+        if (batchIds != null) {
+            searchBatch(batchIds, saveHistory = true)
+            return
+        }
+        // v27.14：从批量模式切回普通搜索时取消尚未完成的批量搜索
+        if (batchMode) {
+            batchMode = false
+            searchBatchJob?.cancel()
+        }
+        viewModelScope.launch {
+            // v27.5 稳定性加固：DataStore 读盘/写盘可能抛 IOException，未捕获会冒泡到
+            // Thread.uncaughtExceptionHandler → CrashHandler → 杀进程。整段包 try-catch，
+            // 失败仍触发 refresh，让用户至少能看到搜索结果（只是没存进历史）。
+            try {
+                // v27.5 #10 #30：仅在用户开启"记录搜索历史"且未启用隐身模式时才写历史
+                val s = container.settingsStore.settings.first()
+                if (s.saveSearchHistory && !s.incognito) {
+                    container.searchHistoryStore.add(q.trim())
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Logger.w("Search", "记录搜索历史失败: ${Logger.brief(e)}")
+            }
+            refresh()
+        }
+    }
+
+    fun onOrderChange(o: String) {
+        // v27.14：批量模式下排序无意义（结果固定无分页），直接忽略
+        if (batchMode) return
+        order = o
+        debounce?.cancel()   // 取消尚未触发的输入 debounce，避免与本次 refresh 并发
+        refresh()
+    }
+
+    /**
+     * v27.14：通用重试入口（错误页"重试"按钮调用）。
+     * - 批量模式下：解析当前 query 重新触发批量搜索（refresh 在 batchMode 下返回空，无效）。
+     * - 普通模式下：等价于 refresh()。
+     */
+    fun retrySearch() {
+        if (batchMode) {
+            val ids = parseBatchIds(query) ?: run {
+                // 异常状态：batchMode=true 但 query 不是批量格式，回退到普通搜索
+                batchMode = false
+                refresh()
+                return
+            }
+            searchBatch(ids, saveHistory = false)
+        } else {
+            refresh()
+        }
+    }
+
+    /**
+     * v27.14：解析输入是否为批量 JM 号搜索。
+     *
+     * 触发条件：输入含分隔符（空格/逗号/句号/分号，中英文皆可），且拆分后≥2 个 token，
+     * 且每个 token 均为纯字母数字（JM ID 特征），长度 1..30。
+     *
+     * @return 按输入顺序去重后的 ID 列表，或 null 表示不是批量搜索（按普通关键词走 search API）。
+     */
+    fun parseBatchIds(input: String): List<String>? {
+        val tokens = input.split(Regex("[\\s,，。;；]+"))
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+        if (tokens.size < 2) return null
+        val idPattern = Regex("^[A-Za-z0-9]+$")
+        if (!tokens.all { idPattern.matches(it) && it.length <= 30 }) return null
+        // 按输入顺序去重（用户可能重复输入同一个 ID）
+        val seen = HashSet<String>(tokens.size)
+        val ordered = ArrayList<String>(tokens.size)
+        for (t in tokens) {
+            if (seen.add(t)) ordered.add(t)
+        }
+        return ordered
+    }
+
+    /**
+     * v27.14：批量按 JM 号搜索。
+     *
+     * 并发拉取每个 ID 的详情（comicDetail），按用户输入顺序排列结果。
+     * 详情接口返回的 tags/likes/views 即真实数据，无需 enrich。
+     * 批量结果无分页（endReached=true），且忽略排序变化。
+     *
+     * @param ids 按用户输入顺序的 ID 列表（已去重）
+     * @param saveHistory true=记录搜索历史（用户主动触发时）
+     */
+    private fun searchBatch(ids: List<String>, saveHistory: Boolean) {
+        query = ids.joinToString(" ")
+        batchMode = true
+        debounce?.cancel()
+        // v27.14：取消上一次未完成的批量搜索，避免旧结果覆盖新结果
+        searchBatchJob?.cancel()
+        // 可选：记录搜索历史（批量搜索词即原始输入）
+        if (saveHistory) {
+            viewModelScope.launch {
+                try {
+                    val s = container.settingsStore.settings.first()
+                    if (s.saveSearchHistory && !s.incognito) {
+                        container.searchHistoryStore.add(ids.joinToString(" "))
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    Logger.w("Search", "记录批量搜索历史失败: ${Logger.brief(e)}")
+                }
+            }
+        }
+        searchBatchJob = viewModelScope.launch {
+            _state.value = _state.value.copy(
+                refreshing = true,
+                error = null,
+                page = 1,
+                endReached = false,
+                items = emptyList(),
+                coverHiddenIds = emptySet(),
+            )
+            try {
+                // 并发拉取每个 ID 的详情，8s 超时
+                val results: Map<String, com.jmreader.data.dto.ComicDetailDto?> = coroutineScope {
+                    ids.map { id ->
+                        async {
+                            try {
+                                val detail = kotlinx.coroutines.withTimeoutOrNull(8000L) {
+                                    container.repository.comicDetail(id)
+                                        .let { (it as? Resource.Success)?.data }
+                                }
+                                id to detail
+                            } catch (_: Throwable) {
+                                id to null
+                            }
+                        }
+                    }.awaitAll().toMap()
+                }
+                // 按输入顺序排列，跳过失败的（detail==null）
+                val ordered = ids.mapNotNull { id ->
+                    results[id]?.let { d ->
+                        com.jmreader.data.dto.ComicBriefDto(
+                            id = d.id.ifBlank { id },
+                            name = d.name.ifBlank { "JM$id" },
+                            author = d.author,
+                            tags = d.tags,
+                            cover = d.cover,
+                            likes = d.likes,
+                            views = d.views,
+                            publishTime = d.publishTime,
+                        )
+                    }
+                }
+                if (ordered.isEmpty()) {
+                    _state.value = _state.value.copy(
+                        refreshing = false,
+                        endReached = true,
+                        error = "全部 ${ids.size} 个本子拉取失败，请检查 ID 或网络后重试",
+                    )
+                    return@launch
+                }
+                setBatchResult(ordered, ordered.size)
+                val missing = ids.size - ordered.size
+                if (missing > 0) {
+                    Logger.w("Search", "批量搜索：$missing/${ids.size} 个 ID 拉取失败")
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Logger.e("Search", "批量搜索异常", e)
+                _state.value = _state.value.copy(
+                    refreshing = false,
+                    error = Logger.friendlyError(Logger.brief(e)),
+                )
+            }
+        }
+    }
+
+    override suspend fun loadPage(page: Int): Resource<Pair<List<ComicBriefDto>, Int?>> {
+        // v27.14：批量模式下不分页（setBatchResult 已设 endReached=true，loadMore 不会触发，
+        // 但为防御性编程，这里直接返回空成功结果）
+        if (batchMode) {
+            return Resource.Success(emptyList<ComicBriefDto>() to _state.value.total)
+        }
+        val r = container.repository.search(query, page, order)
+        return when (r) {
+            is Resource.Success -> {
+                // 关键修复（Bug 48）：偶尔禁漫 API 会因域名抖动/限流返回空列表（code=200 但 content=[]），
+                // 用户表现为"搜索不出结果"。首次为空且 query 非空时自动重试一次（短暂延迟后换域名再请求）。
+                // 仅首页重试：翻页返回空可能是真的没数据，不应误重试。
+                if (page == 1 && r.data.items.isEmpty() && query.isNotBlank() && r.data.total != 0) {
+                    Logger.w("Search", "首页搜索返回空，800ms 后重试一次")
+                    kotlinx.coroutines.delay(800)
+                    // reqApi 内部已会自动轮换域名重试，这里直接发第二次请求即可。
+                    when (val r2 = container.repository.search(query, page, order)) {
+                        is Resource.Success -> Resource.Success(r2.data.items to r2.data.total)
+                        is Resource.Error -> r2
+                        Resource.Loading -> Resource.Loading
+                    }
+                } else {
+                    Resource.Success(r.data.items to r.data.total)
+                }
+            }
+            is Resource.Error -> r
+            Resource.Loading -> Resource.Loading
+        }
+    }
+}
+
+class SearchVMFactory(private val container: AppContainer) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        SearchViewModel(container) as T
+}
 
 @Composable
 fun SearchScreen(
@@ -97,8 +362,7 @@ fun SearchScreen(
     navController: NavController,
     initialQuery: String? = null,
 ) {
-    // v28.0 Hilt 迁移：使用 hiltViewModel() 自动注入
-    val vm: SearchViewModel = hiltViewModel()
+    val vm: SearchViewModel = viewModel(factory = SearchVMFactory(container))
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     // 关键修复（Bug 40）：网格模式也要外部传入 state，新搜索/换排序后才能 scrollToItem(0) 滚回顶部。

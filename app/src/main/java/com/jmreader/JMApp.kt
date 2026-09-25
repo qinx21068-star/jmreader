@@ -7,22 +7,16 @@ import com.jmreader.core.CoilSetup
 import com.jmreader.core.CrashHandler
 import com.jmreader.core.Logger
 import com.jmreader.data.AppContainer
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import javax.inject.Inject
 
 /**
  * 应用入口，持有全局依赖容器。
  * 干净无广告：不集成任何统计/广告 SDK，无后台保活。
- *
- * v28.0: 已迁移到 Hilt 依赖注入架构
- * - @HiltAndroidApp: Hilt 自动生成 Application 组件
- * - AppContainer: 暂时保留兼容旧代码，逐步迁移到 Hilt Module
  *
  * 关键初始化：
  * - Logger：日志系统（文件 + 内存 + Logcat）
@@ -32,12 +26,10 @@ import javax.inject.Inject
  * 注意：DataStore 读取放到后台协程，不在主线程 runBlocking，避免 ANR。
  * 自定义域名合并异步进行，首次启动若未及时合并也只是用内置域名，不影响可用性。
  */
-@HiltAndroidApp
 class JMApp : Application(), ImageLoaderFactory {
 
-    // v28.0: 使用 Hilt 注入 AppContainer（过渡方案，后续会拆分为独立依赖）
-    @Inject
     lateinit var container: AppContainer
+        private set
 
     /** App 级别的协程作用域，用于启动阶段的异步初始化任务。
      *  v27.5 稳定性加固：附加 CrashHandler.coroutineHandler 兜底未捕获异常，
@@ -52,7 +44,7 @@ class JMApp : Application(), ImageLoaderFactory {
         CrashHandler().install()
 
         instance = this
-        // container 已通过 Hilt 注入，无需手动创建
+        container = AppContainer(this)
         // 让 Coil 用直连客户端的 OkHttp（共享连接池、超时配置、cookie）
         CoilSetup.bindOkHttp(container.directClient.http)
         // 让 JmImageFetcher 能做图片域名轮换

@@ -86,7 +86,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.jmreader.R
 import com.jmreader.data.AppContainer
 import com.jmreader.data.local.BlockMode
@@ -112,8 +111,374 @@ import kotlinx.coroutines.launch
 // ViewModel（与原版完全一致，未做任何逻辑改动）
 // ============================================================================
 
-// SettingsViewModel 已在独立文件 SettingsViewModel.kt
-// v28.0 使用 Hilt
+class SettingsViewModel(private val container: AppContainer) : ViewModel() {
+
+    val settings = container.settingsStore.settings
+    /** v27.5 性能优化：同步快照，作为 collectAsState 初始值，避免 null → 默认 → 真实 两轮重组。 */
+    val cachedSnapshot = container.settingsStore.cachedSnapshot
+    val blockedTags = container.blockedTagsStore.tags
+    val blockedNames = container.blockedTagsStore.names
+    val blockedAuthors = container.blockedTagsStore.authors
+
+    private val _events = MutableSharedFlow<String>()
+    val events: SharedFlow<String> = _events.asSharedFlow()
+
+    /**
+     * v27.5 稳定性加固：所有用户操作都用 launchSafe 包裹，IO 异常不会让进程崩溃。
+     * viewModelScope 默认无 CoroutineExceptionHandler，未捕获的非 CancellationException
+     * 会冒泡到 Thread.uncaughtExceptionHandler → CrashHandler → 杀进程。
+     * DataStore 写盘、Coil 清缓存、Moshi 序列化等都可能抛 IOException，必须兜底。
+     */
+    private fun launchSafe(block: suspend () -> Unit) = viewModelScope.launch {
+        try {
+            block()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            com.jmreader.core.Logger.w("Settings", "操作失败: ${com.jmreader.core.Logger.brief(e)}")
+            _events.emit("操作失败：${e.message ?: "未知错误"}")
+        }
+    }
+
+    fun setServerUrl(url: String) = launchSafe {
+        val trimmed = url.trim()
+        // URL 格式校验：非空时必须以 http:// 或 https:// 开头，避免非法 URL 写盘后所有请求失败
+        if (trimmed.isNotEmpty()) {
+            if (!trimmed.startsWith("http://", ignoreCase = true) &&
+                !trimmed.startsWith("https://", ignoreCase = true)) {
+                _events.emit("URL 必须以 http:// 或 https:// 开头")
+                return@launchSafe
+            }
+            // 统一去掉末尾斜杠
+            container.settingsStore.setServerUrl(trimmed.trimEnd('/'))
+        } else {
+            // 空 URL：切回直连模式
+            container.settingsStore.setServerUrl("")
+        }
+        container.rebuildApi()
+        _events.emit(if (trimmed.isEmpty()) "已切换为直连模式" else "后端地址已更新")
+    }
+
+    fun setTheme(mode: ThemeMode) = launchSafe { container.settingsStore.setThemeMode(mode) }
+    fun setReaderDirection(dir: ReaderDirection) = launchSafe { container.settingsStore.setReaderDirection(dir) }
+    fun setDynamicColor(enabled: Boolean) = launchSafe { container.settingsStore.setDynamicColor(enabled) }
+    fun setListStyle(style: com.jmreader.data.local.ListStyle) = launchSafe {
+        container.settingsStore.setListStyle(style)
+    }
+    fun setVolumeKeyPaging(enabled: Boolean) = launchSafe {
+        container.settingsStore.setVolumeKeyPaging(enabled)
+    }
+    fun setMaxRefreshRate(enabled: Boolean) = launchSafe {
+        container.settingsStore.setPreferMaxRefreshRate(enabled)
+        _events.emit(if (enabled) "已开启最高刷新率" else "已关闭最高刷新率")
+    }
+
+    // ============= v27.5 阅读器增强 setters =============
+    fun setTapZoneMode(m: TapZoneMode) = launchSafe { container.settingsStore.setTapZoneMode(m) }
+    fun setAutoScroll(v: Boolean) = launchSafe { container.settingsStore.setAutoScroll(v) }
+    fun setAutoScrollSpeed(v: Float) = launchSafe { container.settingsStore.setAutoScrollSpeed(v) }
+    fun setPreloadNextChapter(v: Boolean) = launchSafe { container.settingsStore.setPreloadNextChapter(v) }
+    fun setRememberPageLevel(v: Boolean) = launchSafe { container.settingsStore.setRememberPageLevel(v) }
+    fun setReaderFontSize(v: Float) = launchSafe { container.settingsStore.setReaderFontSize(v) }
+    fun setReaderLineSpacing(v: Float) = launchSafe { container.settingsStore.setReaderLineSpacing(v) }
+    fun setPinchZoom(v: Boolean) = launchSafe { container.settingsStore.setPinchZoom(v) }
+    fun setNightModeFilter(v: Boolean) = launchSafe { container.settingsStore.setNightModeFilter(v) }
+    fun setNightModeFilterStrength(v: Float) = launchSafe { container.settingsStore.setNightModeFilterStrength(v) }
+
+    // ============= v27.5 列表/UI 自定义 setters =============
+    fun setCardCornerRadius(v: Float) = launchSafe { container.settingsStore.setCardCornerRadius(v) }
+    fun setCardElevation(v: Float) = launchSafe { container.settingsStore.setCardElevation(v) }
+    fun setCornerMode(m: CornerMode) = launchSafe { container.settingsStore.setCornerMode(m) }
+    fun setListTitleFontSize(v: Float) = launchSafe { container.settingsStore.setListTitleFontSize(v) }
+    fun setListBodyFontSize(v: Float) = launchSafe { container.settingsStore.setListBodyFontSize(v) }
+    fun setCoverAspectRatio(s: String) = launchSafe { container.settingsStore.setCoverAspectRatio(s) }
+    fun setTabBarStyle(s: TabBarStyle) = launchSafe { container.settingsStore.setTabBarStyle(s) }
+    fun setDetailParallax(v: Boolean) = launchSafe { container.settingsStore.setDetailParallax(v) }
+    fun setSplashAnim(v: Boolean) = launchSafe { container.settingsStore.setSplashAnim(v) }
+
+    // ============= v27.5 隐私 setters =============
+    fun setAppLockEnabled(v: Boolean) = launchSafe {
+        container.settingsStore.setAppLockEnabled(v)
+        _events.emit(if (v) "已开启应用锁" else "已关闭应用锁")
+    }
+    fun setAppLockPin(pin: String?) = launchSafe {
+        container.settingsStore.setAppLockPin(pin)
+        _events.emit(if (pin == null) "已切换为指纹解锁" else "PIN 已设置")
+    }
+    fun setIncognito(v: Boolean) = launchSafe {
+        container.settingsStore.setIncognito(v)
+        _events.emit(if (v) "已进入隐身模式（不记录历史）" else "已退出隐身模式")
+    }
+    fun setBlockScreenshots(v: Boolean) = launchSafe {
+        container.settingsStore.setBlockScreenshots(v)
+        _events.emit(if (v) "已屏蔽截图（重启生效）" else "已允许截图（重启生效）")
+    }
+
+    // ============= v27.5 搜索 setters =============
+    fun setSaveSearchHistory(v: Boolean) = launchSafe { container.settingsStore.setSaveSearchHistory(v) }
+    fun setSearchTagFilter(v: Boolean) = launchSafe { container.settingsStore.setSearchTagFilter(v) }
+
+    // ============= v27.5 下载 setters =============
+    fun setDownloadConcurrency(v: Int) = launchSafe {
+        container.settingsStore.setDownloadConcurrency(v)
+        container.downloadManager.setConcurrency(v)
+        _events.emit("下载并发数已设为 $v")
+    }
+    fun setLocalSearchEnabled(v: Boolean) = launchSafe { container.settingsStore.setLocalSearchEnabled(v) }
+    fun setDownloadDirUri(uri: String?) = launchSafe {
+        container.settingsStore.setDownloadDirUri(uri)
+        _events.emit(if (uri == null) "已重置为默认下载路径" else "已设置自定义下载路径")
+    }
+
+    // ============= v27.5 网络/图片 setters =============
+    fun setImageQuality(q: ImageQuality) = launchSafe {
+        container.settingsStore.setImageQuality(q)
+        _events.emit("图片质量已设为 ${q.label()}")
+    }
+    fun setPinnedImageCdn(cdn: String?) = launchSafe {
+        container.settingsStore.setPinnedImageCdn(cdn)
+        // v27.5 #34：运行时同步给 JmDirectClient，立即生效（下次图片请求即用新 CDN）
+        container.directClient.setPinnedImageCdn(cdn)
+        // 清掉图片缓存，避免旧 CDN 缓存的图片继续显示
+        if (!cdn.isNullOrBlank()) container.clearImageCache()
+        _events.emit(if (cdn.isNullOrBlank()) "已恢复自动 CDN 轮换" else "已锁定图片 CDN：$cdn")
+    }
+    fun setProxy(p: String?) = launchSafe {
+        val trimmed = p?.trim()?.ifBlank { null }
+        if (trimmed != null) {
+            // 简单校验：必须是 host:port 或 socks5://host:port
+            val valid = trimmed.startsWith("socks5://", ignoreCase = true) ||
+                trimmed.startsWith("http://", ignoreCase = true) ||
+                trimmed.startsWith("https://", ignoreCase = true) ||
+                trimmed.matches(Regex("""^[\w.\-]+:\d+$"""))
+            if (!valid) {
+                _events.emit("代理格式无效，应为 host:port 或 socks5://host:port")
+                return@launchSafe
+            }
+        }
+        container.settingsStore.setProxy(trimmed)
+        container.rebuildApi()
+        _events.emit(if (trimmed == null) "已清除代理" else "已设置代理：$trimmed")
+    }
+
+    // ============= v27.5 排行榜 setter =============
+    fun setRankingPeriod(p: RankingPeriod) = launchSafe { container.settingsStore.setRankingPeriod(p) }
+
+    /** v27.14：屏蔽模式 setter（HIDE=直接隐藏；COVER_ONLY=仅隐藏封面保留卡片）。 */
+    fun setBlockMode(m: BlockMode) = launchSafe {
+        container.settingsStore.setBlockMode(m)
+        _events.emit(if (m == BlockMode.COVER_ONLY) "已切换为仅隐藏封面" else "已切换为直接隐藏")
+    }
+
+    /**
+     * v27.15：开关「通知栏稍后再看」。
+     *
+     * 开启时：启动 [com.jmreader.notification.ReadLaterForegroundService]（通知权限由 UI 层申请）。
+     * 关闭时：停止 Service，通知自动消失。已收藏的「稍后再看」条目保留。
+     */
+    fun setReadLaterNotificationEnabled(v: Boolean) = launchSafe {
+        container.settingsStore.setReadLaterNotificationEnabled(v)
+        _events.emit(if (v) "已开启通知栏稍后再看" else "已关闭通知栏稍后再看")
+    }
+
+    /** 清缓存：图片/搜索/全部。 */
+    fun clearCache(target: com.jmreader.data.local.ClearCacheTarget) = launchSafe {
+        val msg = when (target) {
+            com.jmreader.data.local.ClearCacheTarget.IMAGES -> {
+                container.clearImageCache()
+                "已清除图片缓存"
+            }
+            com.jmreader.data.local.ClearCacheTarget.SEARCH -> {
+                container.searchHistoryStore.clear()
+                "已清除搜索历史"
+            }
+            com.jmreader.data.local.ClearCacheTarget.ALL -> {
+                container.clearImageCache()
+                container.searchHistoryStore.clear()
+                "已清除全部缓存"
+            }
+        }
+        _events.emit(msg)
+    }
+
+    // v27.4：配色方案 + 背景图相关
+    fun setColorScheme(id: String) = launchSafe {
+        container.settingsStore.setColorSchemeId(id)
+        // 切到预设时清空自定义颜色，避免下次切回 custom 时残留旧值
+        if (id != com.jmreader.ui.theme.CUSTOM_SCHEME_ID) {
+            container.settingsStore.setCustomColors(null)
+        }
+    }
+    fun setCustomColors(colors: com.jmreader.ui.theme.CustomColors) = launchSafe {
+        container.settingsStore.setCustomColors(colors)
+        container.settingsStore.setColorSchemeId(com.jmreader.ui.theme.CUSTOM_SCHEME_ID)
+        _events.emit("已应用自定义配色")
+    }
+    fun setBackgroundImageUri(uri: String?) = launchSafe {
+        container.settingsStore.setBackgroundImageUri(uri)
+        _events.emit(if (uri == null) "已清除背景图" else "已设置背景图")
+    }
+    fun setBackgroundImageOpacity(value: Float) = launchSafe {
+        container.settingsStore.setBackgroundImageOpacity(value)
+    }
+    fun setBackgroundImageBlur(value: Float) = launchSafe {
+        container.settingsStore.setBackgroundImageBlur(value)
+    }
+    fun setBackgroundImageLightOnly(value: Boolean) = launchSafe {
+        container.settingsStore.setBackgroundImageLightOnly(value)
+    }
+
+    /** 屏蔽词最大长度，避免超长关键词拖慢过滤性能 */
+    private val maxBlockItemLength = 50
+
+    fun addBlockedTag(tag: String) = launchSafe {
+        val t = tag.trim()
+        if (t.isEmpty()) return@launchSafe
+        if (t.length > maxBlockItemLength) {
+            _events.emit("屏蔽词过长（最多 $maxBlockItemLength 字符）")
+            return@launchSafe
+        }
+        val existing = container.blockedTagsStore.tags.first()
+        if (existing.any { it.equals(t, ignoreCase = true) }) {
+            _events.emit("该屏蔽 Tag 已存在：$t")
+            return@launchSafe
+        }
+        container.blockedTagsStore.addTag(t)
+        _events.emit("已添加屏蔽 Tag：$t")
+    }
+
+    fun removeBlockedTag(tag: String) = launchSafe {
+        container.blockedTagsStore.removeTag(tag)
+        _events.emit("已移除屏蔽 Tag：$tag")
+    }
+
+    fun addBlockedName(name: String) = launchSafe {
+        val n = name.trim()
+        if (n.isEmpty()) return@launchSafe
+        if (n.length > maxBlockItemLength) {
+            _events.emit("屏蔽词过长（最多 $maxBlockItemLength 字符）")
+            return@launchSafe
+        }
+        val existing = container.blockedTagsStore.names.first()
+        if (existing.any { it.equals(n, ignoreCase = true) }) {
+            _events.emit("该屏蔽名称已存在：$n")
+            return@launchSafe
+        }
+        container.blockedTagsStore.addName(n)
+        _events.emit("已添加屏蔽名称：$n")
+    }
+
+    fun removeBlockedName(name: String) = launchSafe {
+        container.blockedTagsStore.removeName(name)
+        _events.emit("已移除屏蔽名称：$name")
+    }
+
+    fun addBlockedAuthor(author: String) = launchSafe {
+        val a = author.trim()
+        if (a.isEmpty()) return@launchSafe
+        if (a.length > maxBlockItemLength) {
+            _events.emit("屏蔽词过长（最多 $maxBlockItemLength 字符）")
+            return@launchSafe
+        }
+        val existing = container.blockedTagsStore.authors.first()
+        if (existing.any { it.equals(a, ignoreCase = true) }) {
+            _events.emit("该屏蔽作者已存在：$a")
+            return@launchSafe
+        }
+        container.blockedTagsStore.addAuthor(a)
+        _events.emit("已添加屏蔽作者：$a")
+    }
+
+    fun removeBlockedAuthor(author: String) = launchSafe {
+        container.blockedTagsStore.removeAuthor(author)
+        _events.emit("已移除屏蔽作者：$author")
+    }
+
+    /** 登录中状态：UI 据此禁用登录按钮，防止连点发多次请求 */
+    private val _loggingIn = MutableStateFlow(false)
+    val loggingIn: StateFlow<Boolean> = _loggingIn.asStateFlow()
+
+    fun login(user: String, pass: String) = launchSafe {
+        // 防重复点击：正在登录时直接返回
+        if (_loggingIn.value) return@launchSafe
+        _loggingIn.value = true
+        try {
+            when (val r = container.repository.login(user, pass)) {
+                is Resource.Success -> _events.emit(if (r.data) "登录成功" else "登录失败：账号或密码错误")
+                is Resource.Error -> _events.emit(r.message)
+                Resource.Loading -> {}
+            }
+        } finally {
+            _loggingIn.value = false
+        }
+    }
+
+    fun logout() = launchSafe {
+        container.repository.logout()
+        _events.emit("已退出登录")
+    }
+
+    /** 健康检查：探测后端可达性 + jmcomic 就绪状态。 */
+    fun healthCheck() = launchSafe {
+        _events.emit("正在检查后端…")
+        val (ok, msg) = container.healthCheck()
+        _events.emit((if (ok) "✓ " else "✗ ") + msg)
+    }
+
+    /**
+     * 保存后端 URL 并立即测试连接。
+     * 关键修复：之前"测试连接"按钮调 healthCheck()，但 healthCheck 用的是已保存的 URL，
+     * 用户在输入框输入新 URL 未点保存时，测试的是旧 URL，行为反直觉。
+     * 现在合并为"保存并测试"，确保测试的是用户当前输入的 URL。
+     *
+     * 关键修复（Bug 23）：之前无防重复点击保护，连点会触发多次 rebuildApi + healthCheck，
+     * 每次 rebuildApi 都会 shutdown 旧 OkHttpClient 创建新的，连点导致：
+     * 1) 连接池/线程池频繁销毁重建，资源浪费；
+     * 2) 多个 healthCheck 并发，snackbar 消息乱序；
+     * 3) 用户误以为没生效连点，反而拖慢首次测试。
+     * 现在用 _savingAndChecking 标志防重入，进行中按钮禁用并显示"测试中…"。
+     */
+    private val _savingAndChecking = MutableStateFlow(false)
+    val savingAndChecking: StateFlow<Boolean> = _savingAndChecking.asStateFlow()
+
+    fun saveAndHealthCheck(url: String) = launchSafe {
+        // 防重复点击：正在保存并测试中直接返回
+        if (_savingAndChecking.value) return@launchSafe
+        _savingAndChecking.value = true
+        try {
+            val trimmed = url.trim()
+            // 基础校验：空 URL 表示切回直连模式，允许；非空 URL 做简单格式检查
+            if (trimmed.isNotEmpty()) {
+                // 必须以 http:// 或 https:// 开头
+                if (!trimmed.startsWith("http://", ignoreCase = true) &&
+                    !trimmed.startsWith("https://", ignoreCase = true)) {
+                    _events.emit("URL 必须以 http:// 或 https:// 开头")
+                    return@launchSafe
+                }
+                // 去掉末尾斜杠，统一格式
+                val normalized = trimmed.trimEnd('/')
+                container.settingsStore.setServerUrl(normalized)
+                container.rebuildApi()
+            } else {
+                // 空 URL：切回直连模式
+                container.settingsStore.setServerUrl("")
+                container.rebuildApi()
+            }
+            _events.emit("正在检查后端…")
+            val (ok, msg) = container.healthCheck()
+            _events.emit((if (ok) "✓ " else "✗ ") + msg)
+        } finally {
+            _savingAndChecking.value = false
+        }
+    }
+}
+
+class SettingsVMFactory(private val container: AppContainer) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsViewModel(container) as T
+}
+
+// ============================================================================
 // 主入口：在 6 个二级页面之间切换
 // ============================================================================
 
@@ -140,9 +505,9 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     container: AppContainer,
     onOpenLogs: () -> Unit = {},
-    onOpenDomains: () -> Unit = {}
+    onOpenDomains: () -> Unit = {},
 ) {
-    val vm: SettingsViewModel = hiltViewModel()
+    val vm: SettingsViewModel = viewModel(factory = SettingsVMFactory(container))
     // v27.5 性能优化：用 cachedSnapshot 作为初始值，避免 null → 默认 → 真实 两轮重组
     val settings by vm.settings.collectAsState(initial = vm.cachedSnapshot)
     val blockedTags by vm.blockedTags.collectAsState(initial = emptySet())

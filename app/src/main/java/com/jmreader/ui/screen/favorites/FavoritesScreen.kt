@@ -433,7 +433,7 @@ private fun ServerFavoritesTab(
     listStyle: com.jmreader.data.local.ListStyle,
 ) {
     val vm: com.jmreader.ui.screen.favorites.ServerFavoritesViewModel =
-        androidx.hilt.navigation.compose.hiltViewModel()
+        androidx.lifecycle.viewmodel.compose.viewModel(factory = com.jmreader.ui.screen.favorites.ServerFavoritesVMFactory(container))
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     // v27.5 性能修复：onClick/onViewLogs/onRetry/onLoadMore 用 remember 缓存稳定 lambda

@@ -717,9 +717,22 @@ class JmDirectClient(
         )
     }
 
-    // 评论/讨论��接口，使用 /forum JSON API。
-    // mode 为空时表示全局评论流，aid/uid 可选，page 从 1 开始。
-    // 响应包含 list 评论数组和 total 总数。
+    /**
+     * 评论/讨论区接口（/forum，移植自 jasmine forum 方法）。
+     *
+     * v27.9：替代之前的 HTML 抓取方案（JmWebFetcher + jm365.work 重定向获取"无 CF 域名"，
+     * 该通道不稳定——CF 拦截/换域/超时频繁，导致评论区/讨论区"根本加载不出来"）。
+     * /forum 走与 /search、/album 相同的 [reqApi] 通道（token 鉴权 + AES 解密 + 域名轮换），
+     * 已验证稳定，与 jasmine 客户端同款。
+     *
+     * @param mode 评论分类，禁漫用 "manhua" 表示漫画评论
+     * @param aid  本子 ID；非空=查该本子的评论（评论区），空=全局评论流（讨论区）
+     * @param uid  用户 ID；非空=查该用户的评论（个人评论页），空=不限用户
+     * @param page 页码（从 1 开始）
+     *
+     * 响应结构：{"list":[Comment...], "total":N}
+     * Comment 字段：AID/CID/UID/nickname/likes/addtime/content(HTML)/photo/name/expinfo{level}/replys[Comment]
+     */
     suspend fun forum(mode: String?, aid: String?, uid: String?, page: Int): JmCommentPageDto {
         // 与 jasmine 一致：null 参数不带（禁漫 API 对空值敏感）
         val params = mutableMapOf("page" to page.toString())
@@ -1058,9 +1071,9 @@ class JmDirectClient(
      * @return Pair<延迟ms, 错误信息?>；成功时错误为 null
      *
      * 关键修复（Bug 28）：之前文件里同时存在两个 testDomain 定义（旧版用 http 40s 超时，
-     * 新版用 testClient 6s 超时但函数体没写完缺右括号，导致）：
-     * - Kotlin 编译报"redeclaration" + 括号不匹配，整个 JmDirectClient.kt 无法编译，App 构建失败；
-     * - 即使能编译，旧版会被优先解析，testClient 形同虚设，弱网下批量测速仍卡 320s。
+     * 新版用 testClient 6s 超时但函数体没写完缺右括号），导致：
+     * 1) Kotlin 编译报"redeclaration" + 括号不匹配，整个 JmDirectClient.kt 无法编译，App 构建失败；
+     * 2) 即使能编译，旧版会被优先解析，testClient 形同虚设，弱网下批量测速仍卡 320s。
      * 现在合并为单一实现，统一用 testClient 短超时。
      */
     fun testDomain(host: String): Pair<Long?, String?> {

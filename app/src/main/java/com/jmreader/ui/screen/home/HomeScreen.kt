@@ -2,7 +2,8 @@
 
 package com.jmreader.ui.screen.home
 
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,15 +84,95 @@ val TIMES = listOf(
  * 通用分类列表 VM：支持 分类 + 时间 + 排序 任意组合。
  * 参数变化时自动 refresh。直连模式调 categoriesFilter。
  */
-// CategoryListViewModel 和 RandomListViewModel 已迁移到 HomeViewModel.kt
-// v28.0 使用 Hilt 依赖注入
+class CategoryListViewModel(container: AppContainer) : BaseListViewModel(container) {
+    var time by mutableStateOf("a")
+        private set
+    var category by mutableStateOf("")
+        private set
+    var order by mutableStateOf("mr")
+        private set
+
+    fun updateTime(t: String) { if (time != t) { time = t; refresh() } }
+    fun updateCategory(c: String) { if (category != c) { category = c; refresh() } }
+    fun updateOrder(o: String) { if (order != o) { order = o; refresh() } }
+
+    /**
+     * 关键修复（Bug 46）：一次性设置 order + time 再 refresh，避免连续 updateOrder + updateTime
+     * 触发两次 refresh。第二次 refresh 虽 cancel了 refreshJob，但 OkHttp call 已在 IO 调度器
+     * 上发出，协程 cancel 不会自动 cancel OkHttp call，导致首次启动多发一次请求，
+     * 结果被丢弃；禁漫有限流时可能首次进排行 tab 就被 429。
+     */
+    fun setDefaults(o: String, t: String) {
+        if (order != o) order = o
+        if (time != t) time = t
+        refresh()
+    }
+
+    override suspend fun loadPage(page: Int): Resource<Pair<List<ComicBriefDto>, Int?>> =
+        when (val r = container.repository.categoriesFilter(page, time, category, order)) {
+            is Resource.Success -> Resource.Success(r.data.items to r.data.total)
+            is Resource.Error -> r
+            Resource.Loading -> Resource.Loading
+        }
+}
+
+/**
+ * 随机推荐 VM：调 [JMRepository.randomComics] 获取随机本子。
+ *
+ * 行为：
+ * - refresh()：换一批，清空原列表重新拉取
+ * - loadMore()：追加一批新的随机本子（按 id 去重，避免与已有重复）
+ *
+ * 首次返回空时自动重试一次（与 SearchViewModel 同款 Bug 48 修复逻辑）。
+ */
+class RandomListViewModel(container: AppContainer) : BaseListViewModel(container) {
+    override suspend fun loadPage(page: Int): Resource<Pair<List<ComicBriefDto>, Int?>> {
+        val r = container.repository.randomComics()
+        return when (r) {
+            is Resource.Success -> {
+                // 关键修复：随机 page+分类偶尔会命中空页（深 page 或冷门分类），
+                // 首页为空时自动重试一次，避免用户看到"没有数据"误以为功能坏了。
+                if (page == 1 && r.data.items.isEmpty()) {
+                    kotlinx.coroutines.delay(500)
+                    when (val r2 = container.repository.randomComics()) {
+                        is Resource.Success -> Resource.Success(r2.data.items to null)
+                        is Resource.Error -> r2
+                        Resource.Loading -> Resource.Loading
+                    }
+                } else {
+                    // total=null：随机模式下"已到底"无意义，让 loadMore 始终可触发，
+                    // 用户可以无限"换一批"。endReached 由 items.isEmpty() 控制。
+                    Resource.Success(r.data.items to null)
+                }
+            }
+            is Resource.Error -> r
+            Resource.Loading -> Resource.Loading
+        }
+    }
+}
+
+class HomeVMFactory(private val container: AppContainer) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        CategoryListViewModel(container) as T
+}
+
+/** 随机 VM 工厂：单独工厂，create 时返回 RandomListViewModel。 */
+class RandomVMFactory(private val container: AppContainer) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        RandomListViewModel(container) as T
+}
+
 @Composable
 fun HomeScreen(container: AppContainer, navController: NavController) {
-    // v28.0 Hilt 迁移：使用 hiltViewModel() 自动注入，不再需要手动创建 Factory
-    // 每个 tab 使用独立的 key 保持各自的分类/时间选择
-    val latestVm: CategoryListViewModel = hiltViewModel(key = "latest")
-    val rankVm: CategoryListViewModel = hiltViewModel(key = "rank")
-    val randomVm: RandomListViewModel = hiltViewModel(key = "random")
+    // v27：用 rememberSaveable 保存 tab 索引，从详情页返回时恢复用户之前选的 tab
+    // （之前用 remember，DetailScreen 离开 composition 后 tab 重置为 0=最新，随机/排行 tab 丢失）
+    var tab by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
+    // 最新 tab / 排行 tab / 随机 tab 各用独立 VM，切回时保留各自的分类/时间选择
+    val latestVm: CategoryListViewModel = viewModel(key = "latest", factory = HomeVMFactory(container))
+    val rankVm: CategoryListViewModel = viewModel(key = "rank", factory = HomeVMFactory(container))
+    val randomVm: RandomListViewModel = viewModel(key = "random", factory = RandomVMFactory(container))
     // v27.5 性能优化：用 cachedSnapshot 作为 collectAsState 初始值，避免 null → 默认 → 真实 两轮重组
     val settings by container.settingsStore.settings.collectAsState(initial = container.settingsStore.cachedSnapshot)
     val listStyle = settings.listStyle

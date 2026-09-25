@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
 }
 
 // 开启 Compose 编译器稳定性报告，诊断 ComicCard 是否真的被 skip
@@ -17,10 +15,11 @@ composeCompiler {
     // 1. 启用 OptimizeNonSkippingGroups：将非 skippable 的 Composable group 优化为不生成独立 group，
     //    减少 currentComposer.startGroup/endGroup 开销。4 个屏幕都有大量非 skippable Composable，
     //    group 维护开销在每次 fling 帧都成倍放大。
+    // 2. stabilityConfigurationFiles：声明 AppContainer 等依赖容器为 Stable，避免被 Compose 推断为
+    //    Unstable 导致屏幕根 Composable 无法 skip。
     featureFlags.addAll(
         org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.OptimizeNonSkippingGroups,
     )
-    // v29.0: Kotlin 2.1.0 支持 stabilityConfigurationFiles
     stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability-config.conf"))
 }
 
@@ -52,14 +51,10 @@ android {
 
     signingConfigs {
         create("release") {
-            // v29.0: 只在 keystore 文件存在时配置签名，避免 CI 构建失败
-            val keystoreFile = file("../release.keystore")
-            if (keystoreFile.exists()) {
-                storeFile = keystoreFile
-                storePassword = storePw
-                this.keyAlias = keyAlias
-                keyPassword = keyPw
-            }
+            storeFile = file("../release.keystore")
+            storePassword = storePw
+            this.keyAlias = keyAlias
+            keyPassword = keyPw
         }
     }
 
@@ -75,11 +70,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // v29.0: 只在签名配置有效时使用
-            val releaseConfig = signingConfigs.getByName("release")
-            if (releaseConfig.storeFile?.exists() == true) {
-                signingConfig = releaseConfig
-            }
+            // 正式版签名：使用项目根目录的 release.keystore
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -135,11 +127,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
     // v27.6：DocumentFile 用于 SAF 外部存储下载支持
     implementation("androidx.documentfile:documentfile:1.0.1")
-
-    // Hilt 依赖注入
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
 
     debugImplementation(libs.androidx.ui.tooling)
 }

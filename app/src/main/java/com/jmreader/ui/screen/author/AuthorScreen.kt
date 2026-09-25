@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jmreader.data.AppContainer
 import com.jmreader.data.dto.ComicBriefDto
@@ -68,7 +67,41 @@ private val ORDERS = listOf(
  *
  * 继承 [BaseListViewModel] 自动获得：分页加载、屏蔽 tag 过滤、tags 补全、错误处理。
  */
-// AuthorViewModel 已迁移到独立文件 AuthorViewModel.kt
+class AuthorViewModel(
+    container: AppContainer,
+    val author: String,
+) : BaseListViewModel(container) {
+    var order by mutableStateOf("latest")
+        private set
+
+    init {
+        // 构造完成即开始加载首页
+        refresh()
+    }
+
+    fun onOrderChange(o: String) {
+        order = o
+        refresh()
+    }
+
+    override suspend fun loadPage(page: Int): Resource<Pair<List<ComicBriefDto>, Int?>> {
+        val r = container.repository.search(author, page, order)
+        return when (r) {
+            is Resource.Success -> Resource.Success(r.data.items to r.data.total)
+            is Resource.Error -> r
+            Resource.Loading -> Resource.Loading
+        }
+    }
+}
+
+class AuthorVMFactory(
+    private val container: AppContainer,
+    private val author: String,
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        AuthorViewModel(container, author) as T
+}
 
 /**
  * 作者主页：展示某作者的所有作品列表（基于搜索 API）。
@@ -86,9 +119,10 @@ fun AuthorScreen(
     author: String,
     onBack: () -> Unit,
 ) {
-    val vm: AuthorViewModel = hiltViewModel<AuthorViewModel, AuthorViewModel.Factory> { factory ->
-        factory.create(author)
-    }
+    val vm: AuthorViewModel = viewModel(
+        factory = AuthorVMFactory(container, author),
+        key = "author_$author", // 不同作者用不同 VM 实例，避免复用同一 VM 导致状态错乱
+    )
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
