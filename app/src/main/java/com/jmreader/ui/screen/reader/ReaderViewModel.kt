@@ -38,8 +38,8 @@ data class ReaderUiState(
 @HiltViewModel(assistedFactory = ReaderViewModel.Factory::class)
 class ReaderViewModel @AssistedInject constructor(
     private val container: AppContainer,
-    @Assisted private val comicId: String,
-    @Assisted initialChapterId: String,
+    @Assisted("comicId") private val comicId: String,
+    @Assisted("initialChapterId") initialChapterId: String,
 ) : ViewModel() {
 
     private var chapterId = initialChapterId
@@ -296,6 +296,9 @@ class ReaderViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(comicId: String, initialChapterId: String): ReaderViewModel
+        fun create(
+            @Assisted("comicId") comicId: String,
+            @Assisted("initialChapterId") initialChapterId: String
+        ): ReaderViewModel
     }
 }
