@@ -52,10 +52,14 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../release.keystore")
-            storePassword = storePw
-            this.keyAlias = keyAlias
-            keyPassword = keyPw
+            // 只在 keystore 文件存在时配置签名
+            val keystoreFile = file("../release.keystore")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = storePw
+                this.keyAlias = keyAlias
+                keyPassword = keyPw
+            }
         }
     }
 
@@ -71,8 +75,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // 正式版签名：使用项目根目录的 release.keystore
-            signingConfig = signingConfigs.getByName("release")
+            // 只在签名配置有效时使用
+            val releaseSigningConfig = signingConfigs.getByName("release")
+            if (releaseSigningConfig.storeFile?.exists() == true) {
+                signingConfig = releaseSigningConfig
+            }
         }
     }
 
