@@ -20,18 +20,18 @@ composeCompiler {
     featureFlags.addAll(
         org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.OptimizeNonSkippingGroups,
     )
-    // v28.0: stabilityConfigurationFiles 需要 Kotlin 2.1.0+，当前版本 2.0.21 不支持，暂时禁用
-    // stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability-config.conf"))
+    // v29.0: Kotlin 2.1.0 支持 stabilityConfigurationFiles
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability-config.conf"))
 }
 
 android {
     namespace = "com.jmreader"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.jmreader"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 29
         versionName = "29.0"
 
