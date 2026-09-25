@@ -36,11 +36,10 @@ jobs:
     
     - name: Setup Build Environment
       run: |
-        # 增加 Gradle 守护进程内存
+        # 增加 Gradle 守护进程内存（GitHub Actions runners 有 7GB RAM）
         mkdir -p ~/.gradle
         echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError" >> ~/.gradle/gradle.properties
         echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
-        echo "org.gradle.parallel=false" >> ~/.gradle/gradle.properties
         # 禁用 AAPT2 守护进程以避免启动失败
         echo "android.injected.aapt2.worker.enable=false" >> ~/.gradle/gradle.properties
       
