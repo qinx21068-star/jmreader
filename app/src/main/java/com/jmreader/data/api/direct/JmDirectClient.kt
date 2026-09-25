@@ -1071,7 +1071,7 @@ class JmDirectClient(
      * @return Pair<延迟ms, 错误信息?>；成功时错误为 null
      *
      * 关键修复（Bug 28）：之前文件里同时存在两个 testDomain 定义（旧版用 http 40s 超时，
-     * 新版用 testClient 6s 超时但函数体没写完缺右括号，导致：
+     * 新版用 testClient 6s 超时但函数体没写完缺右括号，导致）：
      * - Kotlin 编译报"redeclaration" + 括号不匹配，整个 JmDirectClient.kt 无法编译，App 构建失败；
      * - 即使能编译，旧版会被优先解析，testClient 形同虚设，弱网下批量测速仍卡 320s。
      * 现在合并为单一实现，统一用 testClient 短超时。
