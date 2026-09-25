@@ -13,7 +13,7 @@ plugins {
 // 报告对运行时无影响，需要诊断时再打开。
 composeCompiler {
     // reportsDestination = layout.projectDirectory.dir("compose-reports")
-    // v27.5 性能修复（用户连续多轮反馈“所有界面上下滑动都卡”）：
+    // v27.5 性能修复（用户连续多轮反馈"所有界面上下滑动都卡"）：
     // 1. 启用 OptimizeNonSkippingGroups：将非 skippable 的 Composable group 优化为不生成独立 group，
     //    减少 currentComposer.startGroup/endGroup 开销。4 个屏幕都有大量非 skippable Composable，
     //    group 维护开销在每次 fling 帧都成倍放大。
@@ -52,7 +52,7 @@ android {
 
     signingConfigs {
         create("release") {
-            // 只在 keystore 文件存在时配置签名
+            // v29.0: 只在 keystore 文件存在时配置签名，避免 CI 构建失败
             val keystoreFile = file("../release.keystore")
             if (keystoreFile.exists()) {
                 storeFile = keystoreFile
@@ -75,10 +75,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // 只在签名配置有效时使用
-            val releaseSigningConfig = signingConfigs.getByName("release")
-            if (releaseSigningConfig.storeFile?.exists() == true) {
-                signingConfig = releaseSigningConfig
+            // v29.0: 只在签名配置有效时使用
+            val releaseConfig = signingConfigs.getByName("release")
+            if (releaseConfig.storeFile?.exists() == true) {
+                signingConfig = releaseConfig
             }
         }
     }
