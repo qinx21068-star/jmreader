@@ -136,4 +136,8 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.0.1")
 
     debugImplementation(libs.androidx.ui.tooling)
+
+    // Force javapoet version to fix Hilt + AGP 8.7.x compatibility
+    // AGP 8.7.x ships a javapoet that removed canonicalName() which Hilt's AggregateDepsTask needs
+    implementation("com.squareup:javapoet:1.13.0")
 }
