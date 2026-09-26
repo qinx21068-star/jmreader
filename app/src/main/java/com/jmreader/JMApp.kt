@@ -7,6 +7,7 @@ import com.jmreader.core.CoilSetup
 import com.jmreader.core.CrashHandler
 import com.jmreader.core.Logger
 import com.jmreader.data.AppContainer
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,6 +27,7 @@ import kotlinx.coroutines.plus
  * 注意：DataStore 读取放到后台协程，不在主线程 runBlocking，避免 ANR。
  * 自定义域名合并异步进行，首次启动若未及时合并也只是用内置域名，不影响可用性。
  */
+@HiltAndroidApp
 class JMApp : Application(), ImageLoaderFactory {
 
     lateinit var container: AppContainer

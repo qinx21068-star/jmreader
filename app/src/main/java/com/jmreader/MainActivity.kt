@@ -3,6 +3,7 @@ package com.jmreader
 import android.Manifest
 import android.os.Bundle
 import android.view.WindowManager
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +39,7 @@ import kotlinx.coroutines.launch
  *
  * ComponentActivity 是 FragmentActivity 的父类，所以原有 setContent / Compose 行为完全兼容。
  */
+@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     /** 是否强制最高刷新率，由设置页写入；启动时为 false，Compose 起来后由 settings flow 更新。 */
