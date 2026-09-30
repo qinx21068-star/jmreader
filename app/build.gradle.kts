@@ -93,13 +93,6 @@ android {
     }
 }
 
-// Force javapoet 1.13.0 to fix Hilt 2.52 compatibility with AGP 8.7.3
-configurations.all {
-    resolutionStrategy {
-        force("com.squareup:javapoet:1.13.0")
-    }
-}
-
 dependencies {
     // Hilt DI (optional, not used yet)
     implementation(libs.hilt.android)
