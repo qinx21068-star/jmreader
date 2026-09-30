@@ -100,18 +100,20 @@ configurations.all {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("com.squareup:javapoet:1.13.0")
+    }
+}
+
 dependencies {
     // Hilt DI (optional, not used yet)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     
-    // Force javapoet 1.13.0 for Hilt 2.54 compatibility
-    constraints {
-        implementation("com.squareup:javapoet:1.13.0") {
-            because("Hilt 2.54 requires javapoet 1.13.0 for ClassName.canonicalName()")
-        }
-    }
+    // Explicitly force javapoet 1.13.0 for Hilt 2.54 runtime compatibility
+    implementation("com.squareup:javapoet:1.13.0")
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
