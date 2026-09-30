@@ -93,14 +93,18 @@ android {
     }
 }
 
+// Force javapoet 1.13.0 to fix Hilt 2.52 compatibility with AGP 8.7.3
+configurations.all {
+    resolutionStrategy {
+        force("com.squareup:javapoet:1.13.0")
+    }
+}
+
 dependencies {
     // Hilt DI (optional, not used yet)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-    
-    // Fix: Force javapoet 1.13.0 to resolve Hilt 2.52 NoSuchMethodError with AGP 8.7.3
-    implementation("com.squareup:javapoet:1.13.0")
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
