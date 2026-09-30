@@ -93,27 +93,11 @@ android {
     }
 }
 
-// Force javapoet 1.13.0 to fix Hilt 2.54 compatibility
-configurations.all {
-    resolutionStrategy {
-        force("com.squareup:javapoet:1.13.0")
-    }
-}
-
-configurations.all {
-    resolutionStrategy {
-        force("com.squareup:javapoet:1.13.0")
-    }
-}
-
 dependencies {
     // Hilt DI (optional, not used yet)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-    
-    // Explicitly force javapoet 1.13.0 for Hilt 2.54 runtime compatibility
-    implementation("com.squareup:javapoet:1.13.0")
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
