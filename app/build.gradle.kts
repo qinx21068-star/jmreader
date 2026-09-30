@@ -99,6 +99,9 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     
+    // Fix: Force javapoet 1.13.0 to resolve Hilt 2.52 NoSuchMethodError with AGP 8.7.3
+    implementation("com.squareup:javapoet:1.13.0")
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
