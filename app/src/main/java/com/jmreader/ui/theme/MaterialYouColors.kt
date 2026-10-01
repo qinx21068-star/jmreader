@@ -132,20 +132,4 @@ val MaterialYouDarkScheme = darkColorScheme(
     scrim = Color(0xFF000000),                 // 阴影遮罩（黑色半透明）
 )
 
-/**
- * Material You 配色预览
- * 用于设置页配色选择器
- */
-val MaterialYouPreviewLight = PreviewColors(
-    primary = Color(0xFF6750A4),      // 紫罗兰
-    secondary = Color(0xFF625B71),    // 青灰
-    tertiary = Color(0xFF7D5260),     // 暖橙
-    background = Color(0xFFFFFBFE),   // 柔和白
-)
-
-val MaterialYouPreviewDark = PreviewColors(
-    primary = Color(0xFFD0BCFF),      // 高亮紫
-    secondary = Color(0xFFCCC2DC),    // 柔和青灰
-    tertiary = Color(0xFFEFB8C8),     // 柔和暖橙
-    background = Color(0xFF1C1B1F),   // 深紫灰
-)
+// Material You 配色预览色块已在 ColorSchemes.kt 的 PresetScheme.swatches 中定义
