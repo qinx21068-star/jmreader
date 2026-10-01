@@ -191,7 +191,7 @@ fun GlassySettingsCard(
             
             // 右箭头
             Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ChevronRight,
+                imageVector = Icons.Outlined.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
