@@ -22,6 +22,11 @@ jsoup = "1.18.3"
 biometric = "1.1.0"
 lifecycleProcess = "2.8.7"
 
+# RikkaHub 同款 - Haze 毛玻璃效果
+haze = "0.9.0"
+# Material 3 Adaptive & Expressive
+material3Adaptive = "1.1.0"
+
 [libraries]
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
@@ -59,6 +64,15 @@ jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+
+# RikkaHub 同款 - Haze 毛玻璃库（4个核心库）
+haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
+haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", version.ref = "haze" }
+
+# Material 3 Adaptive & Expressive
+androidx-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "material3Adaptive" }
+androidx-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout", version.ref = "material3Adaptive" }
+androidx-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "material3Adaptive" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -128,6 +128,15 @@ dependencies {
     // v27.6：DocumentFile 用于 SAF 外部存储下载支持
     implementation("androidx.documentfile:documentfile:1.0.1")
 
+    // v29.0 RikkaHub 同款 - Haze 毛玻璃效果库
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
+    
+    // v29.0 Material 3 Adaptive & Expressive API
+    implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.material3.adaptive.layout)
+    implementation(libs.androidx.material3.adaptive.navigation)
+
     debugImplementation(libs.androidx.ui.tooling)
 
     // Force javapoet version to fix Hilt + AGP 8.7.x compatibility

@@ -1,0 +1,331 @@
+package com.jmreader.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+
+/**
+ * RikkaHub 同款 - 毛玻璃卡片组件
+ * 
+ * 使用 Haze 库实现背景模糊 + 半透明效果
+ * Material 3 风格 + 超大圆角
+ */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun GlassyCard(
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+    backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+    blurRadius: Dp = 20.dp,
+    onClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val cardModifier = if (hazeState != null) {
+        modifier
+            .hazeChild(
+                state = hazeState,
+                style = HazeStyle(
+                    blurRadius = blurRadius,
+                    tint = HazeTint(backgroundColor),
+                )
+            )
+            .clip(shape)
+    } else {
+        modifier
+            .clip(shape)
+            .background(backgroundColor)
+    }
+    
+    val finalModifier = if (onClick != null) {
+        cardModifier.clickable(onClick = onClick)
+    } else {
+        cardModifier
+    }
+    
+    Column(
+        modifier = finalModifier.padding(20.dp),
+        content = content
+    )
+}
+
+/**
+ * RikkaHub 同款 - 毛玻璃顶部 AppBar
+ * 
+ * 透明背景 + 背景模糊效果
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@Composable
+fun GlassyTopAppBar(
+    title: String,
+    hazeState: HazeState? = null,
+    navigationIcon: ImageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+    onNavigationClick: () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    val appBarModifier = if (hazeState != null) {
+        modifier.hazeChild(
+            state = hazeState,
+            style = HazeStyle(
+                blurRadius = 20.dp,
+                tint = HazeTint(
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                ),
+            )
+        )
+    } else {
+        modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+    }
+    
+    TopAppBar(
+        title = { 
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            ) 
+        },
+        navigationIcon = {
+            IconButton(onClick = onNavigationClick) {
+                Icon(
+                    imageVector = navigationIcon,
+                    contentDescription = "返回"
+                )
+            }
+        },
+        actions = actions,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
+        ),
+        modifier = appBarModifier
+    )
+}
+
+/**
+ * RikkaHub 同款 - 毛玻璃设置项卡片
+ * 
+ * Pill 图标 + 标题 + 副标题 + 右箭头
+ * 带毛玻璃背景模糊效果
+ */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun GlassySettingsCard(
+    title: String,
+    subtitle: String? = null,
+    icon: ImageVector,
+    hazeState: HazeState? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState,
+        shape = MaterialTheme.shapes.extraLarge,
+        backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+        blurRadius = 20.dp,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                // Pill 形状图标背景
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                // 标题 + 副标题
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (subtitle != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            // 右箭头
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/**
+ * RikkaHub 同款 - 毛玻璃开关组件
+ */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun GlassySwitch(
+    title: String,
+    subtitle: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    hazeState: HazeState? = null,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState,
+        backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+        blurRadius = 20.dp
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = if (enabled) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    }
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (enabled) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                        }
+                    )
+                }
+            }
+            
+            Spacer(Modifier.width(16.dp))
+            
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled
+            )
+        }
+    }
+}
+
+/**
+ * RikkaHub 同款 - 毛玻璃滑块组件
+ */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun GlassySlider(
+    title: String,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int = 0,
+    valueFormatter: (Float) -> String = { "%.1f".format(it) },
+    hazeState: HazeState? = null,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState,
+        backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+        blurRadius = 20.dp
+    ) {
+        // 标题 + 当前值
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                }
+            )
+            
+            Text(
+                text = valueFormatter(value),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        
+        Spacer(Modifier.height(12.dp))
+        
+        // 滑块
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            steps = steps,
+            enabled = enabled,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
+    }
+}
