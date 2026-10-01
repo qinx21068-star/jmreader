@@ -10,25 +10,34 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Casino
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Sort
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,7 +46,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -78,6 +89,15 @@ val TIMES = listOf(
     TimeRange("w", "本周"),
     TimeRange("m", "本月"),
     TimeRange("a", "全部"),
+)
+
+/** 排序选项 */
+data class SortOption(val key: String, val label: String)
+val SORT_OPTIONS = listOf(
+    SortOption("mr", "最新"),
+    SortOption("mv", "观看"),
+    SortOption("mp", "图片数"),
+    SortOption("tf", "评论"),
 )
 
 /**
@@ -164,6 +184,230 @@ class RandomVMFactory(private val container: AppContainer) : ViewModelProvider.F
         RandomListViewModel(container) as T
 }
 
+/**
+ * v29 UI 改进：折叠式筛选栏
+ * 将三行筛选条改为一行按钮，点击弹出 Bottom Sheet 选择
+ */
+@Composable
+private fun CompactFilterBar(
+    tab: Int,
+    currentCategory: String,
+    currentSort: String,
+    currentTime: String,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    onCategorySelect: (String) -> Unit,
+    onSortSelect: (String) -> Unit,
+    onTimeSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showCategorySheet by remember { mutableStateOf(false) }
+    var showSortSheet by remember { mutableStateOf(false) }
+    var showTimeSheet by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // 分类筛选按钮（最新/排行 tab）
+        if (tab != 2) {
+            TextButton(
+                onClick = { showCategorySheet = true },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    Icons.Outlined.FilterList,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    CATEGORIES.find { it.slug == currentCategory }?.label ?: "全部",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+
+        // 排序按钮（最新 tab）
+        if (tab == 0) {
+            TextButton(
+                onClick = { showSortSheet = true },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    Icons.Outlined.Sort,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    SORT_OPTIONS.find { it.key == currentSort }?.label ?: "最新",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+
+        // 时间筛选按钮（排行 tab）
+        if (tab == 1) {
+            TextButton(
+                onClick = { showTimeSheet = true },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    Icons.Outlined.Schedule,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    TIMES.find { it.key == currentTime }?.label ?: "全部",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+
+        // 随机 tab 显示标题
+        if (tab == 2) {
+            Text(
+                "随机推荐",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        // 刷新按钮（所有 tab）
+        IconButton(
+            onClick = onRefresh,
+            enabled = !isRefreshing,
+            modifier = Modifier.size(40.dp),
+        ) {
+            if (isRefreshing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Icon(
+                    if (tab == 2) Icons.Outlined.Casino else Icons.Outlined.Refresh,
+                    contentDescription = if (tab == 2) "换一批" else "刷新列表",
+                )
+            }
+        }
+    }
+
+    // 分类选择 Bottom Sheet
+    if (showCategorySheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showCategorySheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+            ) {
+                Text(
+                    "选择分类",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(CATEGORIES) { cat ->
+                        FilterChip(
+                            selected = currentCategory == cat.slug,
+                            onClick = {
+                                onCategorySelect(cat.slug)
+                                showCategorySheet = false
+                            },
+                            label = { Text(cat.label) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // 排序选择 Bottom Sheet
+    if (showSortSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSortSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+            ) {
+                Text(
+                    "选择排序",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(SORT_OPTIONS) { sort ->
+                        FilterChip(
+                            selected = currentSort == sort.key,
+                            onClick = {
+                                onSortSelect(sort.key)
+                                showSortSheet = false
+                            },
+                            label = { Text(sort.label) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // 时间选择 Bottom Sheet
+    if (showTimeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showTimeSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+            ) {
+                Text(
+                    "选择时间范围",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(TIMES) { time ->
+                        FilterChip(
+                            selected = currentTime == time.key,
+                            onClick = {
+                                onTimeSelect(time.key)
+                                showTimeSheet = false
+                            },
+                            label = { Text(time.label) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun HomeScreen(container: AppContainer, navController: NavController) {
     // v27：用 rememberSaveable 保存 tab 索引，从详情页返回时恢复用户之前选的 tab
@@ -212,7 +456,7 @@ fun HomeScreen(container: AppContainer, navController: NavController) {
     }
     val state by current.state.collectAsState()
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val onLongClick = rememberBlockAction(
         container = container,
         onResult = { msg -> scope.launch { snackbar.showSnackbar(msg) } },
@@ -233,186 +477,103 @@ fun HomeScreen(container: AppContainer, navController: NavController) {
 
     // 用 Box 包裹以承载 SnackbarHost：长按屏蔽/收藏操作需要反馈
     Box(Modifier.fillMaxSize()) {
-     Column(Modifier.fillMaxSize()) {
-        PrimaryTabRow(selectedTabIndex = tab) {
-            Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.home_latest)) })
-            Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.home_ranking)) })
-            Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text("随机") })
-        }
-        // v27.6：筛选条作为 ComicList 的 header，随列表滚动移出视野
-        // PrimaryTabRow 保留在 Column 外（tab 切换是核心导航，应保持可见）
-        //
-        // v27.12 性能修复：filterHeader 用 remember 稳定化。
-        // 之前每次 HomeScreen 重组（loadMore/state 变化）都创建新 lambda 实例 →
-        // ComicList 的 header 参数不稳定 → ComicList 无法跳过重组 → LazyColumn 重新组合。
-        // remember 依赖列表只包含影响 header 内容的变量，state 不在依赖中
-        // （header 内只用 state.refreshing，用 derivedStateOf 细粒度订阅避免整体重组）。
-        val headerRefreshing by remember(current) {
-            derivedStateOf { current.state.value.refreshing }
-        }
-        val filterHeader: @androidx.compose.runtime.Composable () -> Unit = remember(
-            tab, rankVm, latestVm, current, headerRefreshing, onRefresh,
-        ) {
-            {
-                // v27.5 UI 排版对齐：所有顶部筛选条统一 padding（horizontal=12dp, vertical=6dp）和 spacedBy(8dp)
-                // 排行榜 tab 显示时间选择（日榜/周榜/月榜/全部）
-                if (tab == 1) {
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(TIMES) { tr ->
-                            FilterChip(
-                                selected = rankVm.time == tr.key,
-                                onClick = { rankVm.updateTime(tr.key) },
-                                label = { Text(tr.label) },
-                            )
-                        }
-                    }
+        Column(Modifier.fillMaxSize()) {
+            PrimaryTabRow(selectedTabIndex = tab) {
+                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.home_latest)) })
+                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.home_ranking)) })
+                Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text("随机") })
+            }
+
+            // v29 UI 改进：使用折叠式筛选栏替代之前的三行横向滚动
+            // 筛选条作为 ComicList 的 header，随列表滚动移出视野
+            val headerRefreshing by remember(current) {
+                derivedStateOf { current.state.value.refreshing }
+            }
+
+            // v29: 新的折叠式筛选栏组件
+            val filterHeader: @Composable () -> Unit = remember(
+                tab, latestVm, rankVm, current, headerRefreshing, onRefresh,
+            ) {
+                {
+                    CompactFilterBar(
+                        tab = tab,
+                        currentCategory = if (current is CategoryListViewModel) current.category else "",
+                        currentSort = if (current is CategoryListViewModel) current.order else "mr",
+                        currentTime = if (current is CategoryListViewModel) current.time else "a",
+                        isRefreshing = headerRefreshing,
+                        onRefresh = onRefresh,
+                        onCategorySelect = { (current as? CategoryListViewModel)?.updateCategory(it) },
+                        onSortSelect = { latestVm.updateOrder(it) },
+                        onTimeSelect = { rankVm.updateTime(it) },
+                    )
                 }
-                // 分类选择（横向滚动）：仅最新/排行 tab 显示；随机 tab 不需要分类筛选
-                if (tab != 2) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    ) {
-                        LazyRow(
-                            modifier = Modifier.weight(1f),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            items(CATEGORIES) { cat ->
-                                FilterChip(
-                                    selected = (current as CategoryListViewModel).category == cat.slug,
-                                    onClick = { (current as CategoryListViewModel).updateCategory(cat.slug) },
-                                    label = { Text(cat.label) },
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = onRefresh,
-                            enabled = !headerRefreshing,
-                            modifier = Modifier.size(40.dp),
-                        ) {
-                            if (headerRefreshing) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                )
-                            } else {
-                                Icon(Icons.Outlined.Refresh, contentDescription = "刷新列表")
-                            }
-                        }
+            }
+
+            // 列表：三个 tab 各用独立 LazyListState，
+            // 切回 tab / 从详情页返回时保留各自的滚动位置。
+            val latestListState = rememberLazyListState()
+            val rankListState = rememberLazyListState()
+            val randomListState = rememberLazyListState()
+            val listState = when (tab) {
+                0 -> latestListState
+                1 -> rankListState
+                else -> randomListState
+            }
+
+            // 触底加载更多已移入 ComicList 内部（基于 onLoadMore 回调），
+            // 这样列表/网格两种样式都能自动 loadMore，无需调用方按 listState 写 derivedStateOf。
+            Box(Modifier.fillMaxSize()) {
+                // v27.5 稳定性加固：捕获 state 到本地 val，避免 state.error!! race condition NPE
+                val s = state
+                when {
+                    s.refreshing && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
+                        filterHeader()
+                        LoadingBox()
                     }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            "随机推荐",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
+                    // 有 tag 规则且部分条目未补全 tags（持回中），显示"正在过滤…"
+                    s.filtering && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
+                        filterHeader()
+                        LoadingBox(message = "正在按屏蔽规则过滤…")
+                    }
+                    s.error != null && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
+                        filterHeader()
+                        ErrorBox(
+                            s.error,
+                            onRetry = onRefresh,
+                            onViewLogs = onViewLogs,
                         )
-                        IconButton(
-                            onClick = onRefresh,
-                            enabled = !headerRefreshing,
-                            modifier = Modifier.size(40.dp),
-                        ) {
-                            if (headerRefreshing) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                )
-                            } else {
-                                Icon(Icons.Outlined.Casino, contentDescription = "换一批")
-                            }
-                        }
                     }
-                }
-                // 最新 tab 显示排序选择
-                if (tab == 0) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        listOf(
-                            "mr" to "最新", "mv" to "观看", "mp" to "图片数", "tf" to "评论",
-                        ).forEach { (key, label) ->
-                            FilterChip(
-                                selected = latestVm.order == key,
-                                onClick = { latestVm.updateOrder(key) },
-                                label = { Text(label) },
-                            )
-                        }
+                    s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
+                        filterHeader()
+                        EmptyBox(
+                            if (tab == 1) "该分类在此时间段内暂无排行数据"
+                            else if (tab == 2) "暂无随机推荐，点右上角骰子换一批"
+                            else "没有数据"
+                        )
                     }
-                }
-            }
-        }
-        // 列表：三个 tab 各用独立 LazyListState，
-        // 切回 tab / 从详情页返回时保留各自的滚动位置。
-        val latestListState = rememberLazyListState()
-        val rankListState = rememberLazyListState()
-        val randomListState = rememberLazyListState()
-        val listState = when (tab) {
-            0 -> latestListState
-            1 -> rankListState
-            else -> randomListState
-        }
-        // 触底加载更多已移入 ComicList 内部（基于 onLoadMore 回调），
-        // 这样列表/网格两种样式都能自动 loadMore，无需调用方按 listState 写 derivedStateOf。
-        Box(Modifier.fillMaxSize()) {
-            // v27.5 稳定性加固：捕获 state 到本地 val，避免 state.error!! race condition NPE
-            val s = state
-            when {
-                s.refreshing && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
-                    filterHeader()
-                    LoadingBox()
-                }
-                // 有 tag 规则且部分条目未补全 tags（持回中），显示"正在过滤…"
-                s.filtering && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
-                    filterHeader()
-                    LoadingBox(message = "正在按屏蔽规则过滤…")
-                }
-                s.error != null && s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
-                    filterHeader()
-                    ErrorBox(
-                        s.error,
-                        onRetry = onRefresh,
-                        onViewLogs = onViewLogs,
+                    else -> ComicList(
+                        items = s.items,
+                        state = listState,
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                        contentPadding = PaddingValues(bottom = 12.dp),
+                        loadingMore = s.loadingMore,
+                        endReached = s.endReached,
+                        loadError = if (s.items.isNotEmpty()) s.error else null,
+                        onRetry = onLoadMore,
+                        listStyle = listStyle,
+                        onLoadMore = onLoadMore,
+                        header = filterHeader,
+                        onScrollStateChange = onScrollStateChange,
+                        coverHiddenIds = s.coverHiddenIds,
                     )
                 }
-                s.items.isEmpty() -> Column(Modifier.fillMaxSize()) {
-                    filterHeader()
-                    EmptyBox(
-                        if (tab == 1) "该分类在此时间段内暂无排行数据"
-                        else if (tab == 2) "暂无随机推荐，点右上角骰子换一批"
-                        else "没有数据"
-                    )
-                }
-                else -> ComicList(
-                    items = s.items,
-                    state = listState,
-                    onClick = onClick,
-                    onLongClick = onLongClick,
-                    contentPadding = PaddingValues(bottom = 12.dp),
-                    loadingMore = s.loadingMore,
-                    endReached = s.endReached,
-                    loadError = if (s.items.isNotEmpty()) s.error else null,
-                    onRetry = onLoadMore,
-                    listStyle = listStyle,
-                    onLoadMore = onLoadMore,
-                    header = filterHeader,
-                    onScrollStateChange = onScrollStateChange,
-                    coverHiddenIds = s.coverHiddenIds,
-                )
             }
-        }
-     } // end Column
-     // SnackbarHost 浮在底部，长按操作（屏蔽/收藏）的反馈在这里显示
-     androidx.compose.material3.SnackbarHost(
-         snackbar,
-         modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter),
-     )
+        } // end Column
+        // SnackbarHost 浮在底部，长按操作（屏蔽/收藏）的反馈在这里显示
+        androidx.compose.material3.SnackbarHost(
+            snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     } // end Box
 }
