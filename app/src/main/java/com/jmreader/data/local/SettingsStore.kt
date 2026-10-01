@@ -128,7 +128,7 @@ data class AppSettings(
 
     // ============= v27.5 列表/UI 自定义 =============
     /** 卡片圆角 dp（4..24，默认 14）。 */
-    val cardCornerRadius: Float = 14f,
+    val cardCornerRadius: Float = 24f,  // v29.0: Material You 默认改为 24dp（超大圆角）
     /** 卡片阴影 elevation dp（0..8，默认 0）。
      *  v27.5 卡顿修复：默认 0dp。Modifier.shadow 即使 1dp 也要做离屏渲染 + BlurMaskFilter，
      *  全屏 8-10 个卡片同时画 shadow 是滑动卡顿的核心原因之一。0dp 时跳过 .shadow() 完全无开销。
