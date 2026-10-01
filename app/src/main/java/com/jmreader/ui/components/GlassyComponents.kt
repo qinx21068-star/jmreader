@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,10 +20,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 
 /**
  * RikkaHub 同款 - 毛玻璃卡片组件
@@ -35,7 +34,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 fun GlassyCard(
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
-    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+    shape: Shape = MaterialTheme.shapes.extraLarge,
     backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
     blurRadius: Dp = 20.dp,
     onClick: (() -> Unit)? = null,
@@ -47,7 +46,7 @@ fun GlassyCard(
                 state = hazeState,
                 style = HazeStyle(
                     blurRadius = blurRadius,
-                    tint = HazeTint(backgroundColor),
+                    tint = backgroundColor,
                 )
             )
             .clip(shape)
@@ -89,9 +88,7 @@ fun GlassyTopAppBar(
             state = hazeState,
             style = HazeStyle(
                 blurRadius = 20.dp,
-                tint = HazeTint(
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
-                ),
+                tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
             )
         )
     } else {
