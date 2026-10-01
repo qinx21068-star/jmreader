@@ -165,8 +165,13 @@ fun JMTheme(
     }
     val context = LocalContext.current
     val colorScheme = when {
+        // v29.0 Material You 动态取色：Android 12+ 优先级最高
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        // v29.0 Material You 固定配色：作为 Android 11- 的备选方案
+        colorSchemeId == "material_you" -> {
+            if (dark) MaterialYouDarkScheme else MaterialYouLightScheme
+        }
         colorSchemeId == CUSTOM_SCHEME_ID && customColors != null ->
             customColorsToScheme(customColors, dark)
         else -> {
@@ -209,12 +214,15 @@ fun JMTheme(
         ) else colorScheme
     }
     // v27.5：根据 cardCornerRadius 动态生成 Shapes，让设置页圆角滑块真正生效。
+    // v29.0：Material You 风格支持超大圆角，按比例生成 extraSmall/small/large/extraLarge
     // remember(cardCornerRadius) 避免每次重组都新建 Shapes 对象。
     val shapes = remember(cardCornerRadius) {
         Shapes(
-            small = RoundedCornerShape(8.dp),
-            medium = RoundedCornerShape(cardCornerRadius.dp),
-            large = RoundedCornerShape(20.dp),
+            extraSmall = RoundedCornerShape((cardCornerRadius * 0.5f).coerceAtLeast(6f).dp),  // 最小 6dp
+            small = RoundedCornerShape((cardCornerRadius * 0.67f).coerceAtLeast(8f).dp),      // 最小 8dp
+            medium = RoundedCornerShape(cardCornerRadius.dp),                                  // 卡片主圆角
+            large = RoundedCornerShape((cardCornerRadius * 1.17f).dp),                         // 对话框等
+            extraLarge = RoundedCornerShape((cardCornerRadius * 1.33f).dp),                    // 大封面
         )
     }
     // v27.6：解析封面宽高比字符串 "2:3" → Float 0.6667f

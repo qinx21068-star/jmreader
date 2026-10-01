@@ -379,6 +379,15 @@ val PresetSchemes: List<PresetScheme> = listOf(
             outline = Color(0xFF5A7C76), isDark = true,
         ),
     ),
+    // 9. Material You（v29.0 新增）
+    PresetScheme(
+        id = "material_you",
+        name = "Material You",
+        description = "紫罗兰主色 + 超大圆角 + 流畅动效，Android 12+ 支持动态取色",
+        swatches = listOf(Color(0xFF6750A4), Color(0xFF625B71), Color(0xFF7D5260), Color(0xFFFFFBFE)),
+        light = MaterialYouLightScheme,
+        dark = MaterialYouDarkScheme,
+    ),
 )
 
 /** 特殊 id：自定义配色。 */
