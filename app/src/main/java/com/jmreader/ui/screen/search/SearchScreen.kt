@@ -75,6 +75,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 private data class Order(val key: String, val label: String)
 private val ORDERS = listOf(
     Order("latest", "最新"),
@@ -82,27 +87,6 @@ private val ORDERS = listOf(
     Order("likes", "评论"),
     Order("picture", "图片数"),
 )
-
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewModelScope
-import com.jmreader.core.Logger
-import com.jmreader.data.AppContainer
-import com.jmreader.data.dto.ComicBriefDto
-import com.jmreader.data.repository.Resource
-import com.jmreader.ui.viewmodel.BaseListViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 /**
  * v29 性能优化：使用 Flow.debounce() 替代手动 Job + delay()
