@@ -47,6 +47,14 @@ import com.jmreader.ui.screen.logs.LogsScreen
 import com.jmreader.ui.screen.reader.ReaderScreen
 import com.jmreader.ui.screen.search.SearchScreen
 import com.jmreader.ui.screen.settings.SettingsScreen
+import com.jmreader.ui.screen.settings.SettingsMainGlassy
+import com.jmreader.ui.screen.settings.modules.AppearanceSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.ReaderSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.ListSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.NetworkSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.PrivacySettingsGlassy
+import com.jmreader.ui.screen.settings.modules.DownloadSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.AboutSettingsGlassy
 
 /**
  * 底部导航 tab：选中态用 filled 图标，未选中态用 outlined 图标，

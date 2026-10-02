@@ -45,17 +45,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppearanceSettingsGlassy(
-    settings: AppSettings,
-    onThemeModeChange: suspend (ThemeMode) -> Unit,
-    onDynamicColorChange: suspend (Boolean) -> Unit,
-    onColorSchemeChange: suspend (String) -> Unit,
-    onCardCornerRadiusChange: suspend (Float) -> Unit,
-    onCardElevationChange: suspend (Float) -> Unit,
-    onDetailParallaxChange: suspend (Boolean) -> Unit,
-    onSplashAnimChange: suspend (Boolean) -> Unit,
+    container: com.jmreader.data.AppContainer,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val settings by container.settingsStore.settings.collectAsState()
     val scope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
     
@@ -100,7 +94,7 @@ fun AppearanceSettingsGlassy(
                     ).forEachIndexed { index, (mode, label) ->
                         SegmentedButton(
                             selected = settings.themeMode == mode,
-                            onClick = { scope.launch { onThemeModeChange(mode) } },
+                            onClick = { scope.launch { container.settingsStore.updateThemeMode(mode) } },
                             shape = SegmentedButtonDefaults.itemShape(
                                 index = index,
                                 count = 3
@@ -121,7 +115,7 @@ fun AppearanceSettingsGlassy(
                     title = "Material You 动态取色",
                     subtitle = "从壁纸提取主题色（Android 12+）",
                     checked = settings.dynamicColor,
-                    onCheckedChange = { scope.launch { onDynamicColorChange(it) } },
+                    onCheckedChange = { scope.launch { container.settingsStore.setDynamicColor(it) } },
                     hazeState = hazeState,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
@@ -163,9 +157,9 @@ fun AppearanceSettingsGlassy(
                             isSelected = settings.colorSchemeId == scheme.id && !settings.dynamicColor,
                             onClick = {
                                 scope.launch {
-                                    onColorSchemeChange(scheme.id)
+                                    container.settingsStore.setColorSchemeId(scheme.id)
                                     if (settings.dynamicColor) {
-                                        onDynamicColorChange(false)
+                                        container.settingsStore.setDynamicColor(false)
                                     }
                                 }
                             }
@@ -178,7 +172,7 @@ fun AppearanceSettingsGlassy(
             GlassySlider(
                 title = "卡片圆角",
                 value = settings.cardCornerRadius,
-                onValueChange = { scope.launch { onCardCornerRadiusChange(it) } },
+                onValueChange = { scope.launch { container.settingsStore.setCardCornerRadius(it) } },
                 valueRange = 4f..28f,
                 valueFormatter = { "${it.toInt()} dp" },
                 hazeState = hazeState,
@@ -188,7 +182,7 @@ fun AppearanceSettingsGlassy(
             GlassySlider(
                 title = "卡片阴影",
                 value = settings.cardElevation,
-                onValueChange = { scope.launch { onCardElevationChange(it) } },
+                onValueChange = { scope.launch { container.settingsStore.setCardElevation(it) } },
                 valueRange = 0f..8f,
                 valueFormatter = { "${it.toInt()} dp" },
                 hazeState = hazeState,
@@ -200,7 +194,7 @@ fun AppearanceSettingsGlassy(
                 title = "详情页视差滚动",
                 subtitle = "封面图随滚动产生视差效果",
                 checked = settings.detailParallax,
-                onCheckedChange = { scope.launch { onDetailParallaxChange(it) } },
+                onCheckedChange = { scope.launch { container.settingsStore.setDetailParallax(it) } },
                 hazeState = hazeState,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
@@ -209,7 +203,7 @@ fun AppearanceSettingsGlassy(
                 title = "启动动画",
                 subtitle = "应用启动时的淡入动画",
                 checked = settings.splashAnim,
-                onCheckedChange = { scope.launch { onSplashAnimChange(it) } },
+                onCheckedChange = { scope.launch { container.settingsStore.setSplashAnim(it) } },
                 hazeState = hazeState,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
