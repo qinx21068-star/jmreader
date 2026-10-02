@@ -24,6 +24,15 @@ object Routes {
     const val LOGS = "logs"
     const val DOMAINS = "domains"
     const val FORUM = "forum"
+    
+    // v29.0 毛玻璃设置模块
+    const val SETTINGS_APPEARANCE = "settings/appearance"
+    const val SETTINGS_READER = "settings/reader"
+    const val SETTINGS_LIST = "settings/list"
+    const val SETTINGS_NETWORK = "settings/network"
+    const val SETTINGS_PRIVACY = "settings/privacy"
+    const val SETTINGS_DOWNLOAD = "settings/download"
+    const val SETTINGS_ABOUT = "settings/about"
     const val IMAGE_SEARCH = "image_search"
     const val COMMENTS = "comments/{comicId}"
     fun comments(comicId: String) = "comments/${Uri.encode(comicId)}"

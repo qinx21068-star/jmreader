@@ -239,10 +239,15 @@ fun JMApp(container: AppContainer) {
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(
-                    container,
-                    onOpenLogs = { navController.navigate(Routes.LOGS) },
-                    onOpenDomains = { navController.navigate(Routes.DOMAINS) },
+                SettingsMainGlassy(
+                    onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
+                    onNavigateToReader = { navController.navigate(Routes.SETTINGS_READER) },
+                    onNavigateToList = { navController.navigate(Routes.SETTINGS_LIST) },
+                    onNavigateToNetwork = { navController.navigate(Routes.SETTINGS_NETWORK) },
+                    onNavigateToPrivacy = { navController.navigate(Routes.SETTINGS_PRIVACY) },
+                    onNavigateToDownload = { navController.navigate(Routes.SETTINGS_DOWNLOAD) },
+                    onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(Routes.LOGS) { LogsScreen(onBack = { navController.popBackStack() }) }
@@ -250,6 +255,50 @@ fun JMApp(container: AppContainer) {
                 com.jmreader.ui.screen.settings.DomainManageScreen(
                     container = container,
                     onBack = { navController.popBackStack() },
+                )
+            }
+            // v29.0 毛玻璃设置模块
+            composable(Routes.SETTINGS_APPEARANCE) {
+                com.jmreader.ui.screen.settings.modules.AppearanceSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_READER) {
+                com.jmreader.ui.screen.settings.modules.ReaderSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_LIST) {
+                com.jmreader.ui.screen.settings.modules.ListSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_NETWORK) {
+                com.jmreader.ui.screen.settings.modules.NetworkSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_PRIVACY) {
+                com.jmreader.ui.screen.settings.modules.PrivacySettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_DOWNLOAD) {
+                com.jmreader.ui.screen.settings.modules.DownloadSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.SETTINGS_ABOUT) {
+                com.jmreader.ui.screen.settings.modules.AboutSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                    onOpenLogs = { navController.navigate(Routes.LOGS) },
                 )
             }
             composable(

@@ -22,9 +22,10 @@ import dev.chrisbanes.haze.haze
  * 1. 外观设置（主题、配色、圆角、阴影）
  * 2. 阅读器设置（方向、翻页、滤镜、缩放）
  * 3. 列表设置（样式、字号、封面比例）
- * 4. 网络设置（域名、代理、图片质量）
- * 5. 隐私设置（应用锁、截图屏蔽）
- * 6. 关于（版本、协议、开源）
+ * 4. 网络设置（域名、代理、质量）
+ * 5. 隐私设置（应用锁、截图）
+ * 6. 下载设置（路径、并发）
+ * 7. 关于（版本、协议）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,7 @@ fun SettingsMainGlassy(
     onNavigateToList: () -> Unit,
     onNavigateToNetwork: () -> Unit,
     onNavigateToPrivacy: () -> Unit,
+    onNavigateToDownload: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -127,7 +129,17 @@ fun SettingsMainGlassy(
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
             
-            // 6. 关于
+            // 6. 下载设置
+            GlassySettingsCard(
+                title = "下载设置",
+                subtitle = "存储路径、并发数、本地搜索",
+                icon = Icons.Outlined.Download,
+                hazeState = hazeState,
+                onClick = onNavigateToDownload,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+            
+            // 7. 关于
             GlassySettingsCard(
                 title = "关于",
                 subtitle = "版本信息、开源协议、反馈",
