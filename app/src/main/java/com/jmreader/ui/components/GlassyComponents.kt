@@ -269,11 +269,12 @@ fun GlassySwitch(
 @Composable
 fun GlassySlider(
     title: String,
+    subtitle: String? = null,
     value: Float,
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int = 0,
-    valueFormatter: (Float) -> String = { "%.1f".format(it) },
+    valueLabel: (Float) -> String = { "%.1f".format(it) },
     hazeState: HazeState? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
@@ -284,25 +285,35 @@ fun GlassySlider(
         backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
         blurRadius = 20.dp
     ) {
-        // 标题 + 当前值
+        // 标题 + 副标题（可选）+ 当前值
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = if (enabled) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = if (enabled) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    }
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
                 }
-            )
+            }
             
             Text(
-                text = valueFormatter(value),
+                text = valueLabel(value),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary
