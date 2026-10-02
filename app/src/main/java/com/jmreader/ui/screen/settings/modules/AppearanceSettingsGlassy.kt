@@ -94,7 +94,7 @@ fun AppearanceSettingsGlassy(
                     ).forEachIndexed { index, (mode, label) ->
                         SegmentedButton(
                             selected = settings.themeMode == mode,
-                            onClick = { scope.launch { container.settingsStore.updateThemeMode(mode) } },
+                            onClick = { scope.launch { container.settingsStore.setThemeMode(mode) } },
                             shape = SegmentedButtonDefaults.itemShape(
                                 index = index,
                                 count = 3
