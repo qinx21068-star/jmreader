@@ -79,12 +79,12 @@ fun GlassyTopAppBar(
         modifier.hazeChild(
             state = hazeState,
             style = HazeStyle(
-                blurRadius = 20.dp,
-                tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                blurRadius = 30.dp,  // 增强模糊 20dp → 30dp
+                tint = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),  // 降低不透明度，使用 surfaceContainer
             )
         )
     } else {
-        modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+        modifier.background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
     }
     
     TopAppBar(
@@ -370,4 +370,51 @@ fun GlassyScaffold(
             content(paddingValues)
         }
     }
+}
+
+/**
+ * 带渐变背景的内容容器
+ * 
+ * 作为 haze 源，让毛玻璃效果更明显
+ */
+@Composable
+fun GlassyBackground(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                    startY = 0f,
+                    endY = 1000f
+                )
+            )
+    ) {
+        content()
+    }
+}
+
+/**
+ * Material 3 分组标题组件
+ * 
+ * 用于设置页面的分组标题，统一样式
+ */
+@Composable
+fun GlassySectionTitle(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier.padding(vertical = 8.dp)
+    )
 }

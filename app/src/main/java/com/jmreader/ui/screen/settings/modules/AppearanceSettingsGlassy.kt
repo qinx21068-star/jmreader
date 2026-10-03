@@ -5,18 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +29,7 @@ import dev.chrisbanes.haze.haze
 import kotlinx.coroutines.launch
 
 /**
- * 外观设置模块 - RikkaHub 毛玻璃风格
+ * 外观设置模块 - Material 3 设计风格
  * 
  * 包含：
  * - 主题模式（浅色/深色/跟随系统）
@@ -64,249 +59,253 @@ fun AppearanceSettingsGlassy(
             )
         }
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .haze(state = hazeState)
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(padding),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
-            
-            // 主题模式选择
-            GlassyCard(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                hazeState = hazeState
-            ) {
-                Text(
-                    text = "主题模式",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
+            // ============= 主题模式 =============
+            item {
+                GlassySectionTitle(
+                    title = "主题模式",
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
-                
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier.fillMaxWidth()
+            }
+            
+            item {
+                GlassyCard(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    hazeState = hazeState
                 ) {
-                    listOf(
-                        ThemeMode.LIGHT to "浅色",
-                        ThemeMode.DARK to "深色",
-                        ThemeMode.SYSTEM to "跟随系统"
-                    ).forEachIndexed { index, (mode, label) ->
-                        SegmentedButton(
-                            selected = settings.themeMode == mode,
-                            onClick = { scope.launch { container.settingsStore.setThemeMode(mode) } },
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = 3
-                            )
-                        ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        listOf(
+                            ThemeMode.LIGHT to "浅色",
+                            ThemeMode.DARK to "深色",
+                            ThemeMode.SYSTEM to "跟随系统"
+                        ).forEachIndexed { index, (mode, label) ->
+                            SegmentedButton(
+                                selected = settings.themeMode == mode,
+                                onClick = { scope.launch { container.settingsStore.setThemeMode(mode) } },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = 3
+                                )
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }
             }
             
-            // Android 12+ 动态取色开关
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                GlassySwitch(
-                    title = "Material You 动态取色",
-                    subtitle = "从壁纸提取主题色（Android 12+）",
-                    checked = settings.dynamicColor,
-                    onCheckedChange = { scope.launch { container.settingsStore.setDynamicColor(it) } },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+            // ============= 配色方案 =============
+            item {
+                GlassySectionTitle(
+                    title = "配色方案",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                 )
-                
-                if (settings.dynamicColor) {
-                    Text(
-                        text = "✨ 动态取色已启用，预设配色将被覆盖",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                    )
-                }
             }
             
-            // 配色方案选择器
-            GlassyCard(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                hazeState = hazeState
-            ) {
-                Text(
-                    text = "预设配色",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+            // Android 12+ 动态取色开关
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                item {
+                    GlassySwitch(
+                        title = "Material You 动态取色",
+                        subtitle = "从壁纸提取主题色（Android 12+）",
+                        checked = settings.dynamicColor,
+                        onCheckedChange = { scope.launch { container.settingsStore.setDynamicColor(it) } },
+                        hazeState = hazeState,
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                }
                 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(600.dp)
-                ) {
-                    items(PresetSchemes) { scheme ->
-                        ColorSchemeCardGlassy(
-                            scheme = scheme,
-                            isSelected = settings.colorSchemeId == scheme.id && !settings.dynamicColor,
-                            onClick = {
-                                scope.launch {
-                                    container.settingsStore.setColorSchemeId(scheme.id)
-                                    if (settings.dynamicColor) {
-                                        container.settingsStore.setDynamicColor(false)
-                                    }
-                                }
-                            }
+                if (settings.dynamicColor) {
+                    item {
+                        Text(
+                            text = "✨ 动态取色已启用，预设配色将被覆盖",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
                         )
                     }
                 }
             }
             
-            // 圆角与阴影设置
-            GlassySlider(
-                title = "卡片圆角",
-                value = settings.cardCornerRadius,
-                onValueChange = { scope.launch { container.settingsStore.setCardCornerRadius(it) } },
-                valueRange = 4f..28f,
-                valueLabel = { "${it.toInt()} dp" },
-                hazeState = hazeState,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
+            // 配色方案列表（流式布局，不固定高度）
+            items(PresetSchemes) { scheme ->
+                ColorSchemeCard(
+                    scheme = scheme,
+                    isSelected = settings.colorSchemeId == scheme.id && !settings.dynamicColor,
+                    onClick = {
+                        scope.launch {
+                            container.settingsStore.setColorSchemeId(scheme.id)
+                            if (settings.dynamicColor) {
+                                container.settingsStore.setDynamicColor(false)
+                            }
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
             
-            GlassySlider(
-                title = "卡片阴影",
-                value = settings.cardElevation,
-                onValueChange = { scope.launch { container.settingsStore.setCardElevation(it) } },
-                valueRange = 0f..8f,
-                valueLabel = { "${it.toInt()} dp" },
-                hazeState = hazeState,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
+            // ============= 卡片样式 =============
+            item {
+                GlassySectionTitle(
+                    title = "卡片样式",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                )
+            }
             
-            // 动画与效果
-            GlassySwitch(
-                title = "详情页视差滚动",
-                subtitle = "封面图随滚动产生视差效果",
-                checked = settings.detailParallax,
-                onCheckedChange = { scope.launch { container.settingsStore.setDetailParallax(it) } },
-                hazeState = hazeState,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
+            item {
+                GlassySlider(
+                    title = "卡片圆角",
+                    value = settings.cardCornerRadius,
+                    onValueChange = { scope.launch { container.settingsStore.setCardCornerRadius(it) } },
+                    valueRange = 4f..28f,
+                    valueLabel = { "${it.toInt()} dp" },
+                    hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
             
-            GlassySwitch(
-                title = "启动动画",
-                subtitle = "应用启动时的淡入动画",
-                checked = settings.splashAnim,
-                onCheckedChange = { scope.launch { container.settingsStore.setSplashAnim(it) } },
-                hazeState = hazeState,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
+            item {
+                GlassySlider(
+                    title = "卡片阴影",
+                    value = settings.cardElevation,
+                    onValueChange = { scope.launch { container.settingsStore.setCardElevation(it) } },
+                    valueRange = 0f..8f,
+                    valueLabel = { "${it.toInt()} dp" },
+                    hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
             
-            Spacer(Modifier.height(16.dp))
+            // ============= 动画与效果 =============
+            item {
+                GlassySectionTitle(
+                    title = "动画与效果",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                )
+            }
+            
+            item {
+                GlassySwitch(
+                    title = "详情页视差滚动",
+                    subtitle = "封面图随滚动产生视差效果",
+                    checked = settings.detailParallax,
+                    onCheckedChange = { scope.launch { container.settingsStore.setDetailParallax(it) } },
+                    hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
+            
+            item {
+                GlassySwitch(
+                    title = "启动动画",
+                    subtitle = "应用启动时的淡入动画",
+                    checked = settings.splashAnim,
+                    onCheckedChange = { scope.launch { container.settingsStore.setSplashAnim(it) } },
+                    hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
+            
+            item {
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }
 
 /**
- * 毛玻璃风格配色方案卡片
+ * Material 3 风格配色方案卡片
  */
 @Composable
-private fun ColorSchemeCardGlassy(
+private fun ColorSchemeCard(
     scheme: PresetScheme,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(0.9f),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 2.dp
+            defaultElevation = if (isSelected) 4.dp else 0.dp
         )
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .then(
                     if (isSelected) {
                         Modifier.border(
-                            width = 3.dp,
+                            width = 2.dp,
                             color = MaterialTheme.colorScheme.primary,
                             shape = MaterialTheme.shapes.large
                         )
                     } else Modifier
                 )
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            // 色块预览
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // 配色名称
+                scheme.swatches.forEach { color ->
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                }
+            }
+            
+            // 名称和描述
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = scheme.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 
-                // 4 个主色调色块
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    scheme.swatches.forEach { color ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f)
-                                .clip(CircleShape)
-                                .background(color)
-                        )
-                    }
-                }
-                
-                // 描述文本
                 Text(
                     text = scheme.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3
+                    maxLines = 2
                 )
             }
             
             // 选中指示器
             if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp)
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = "已选中",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = "已选中",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }

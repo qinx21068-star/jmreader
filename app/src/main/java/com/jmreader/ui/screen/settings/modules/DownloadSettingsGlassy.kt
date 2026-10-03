@@ -2,19 +2,19 @@ package com.jmreader.ui.screen.settings.modules
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FolderOpen
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
 import com.jmreader.ui.components.*
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import kotlinx.coroutines.launch
 
+/**
+ * 下载设置模块 - Material 3 设计风格
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadSettingsGlassy(
@@ -31,63 +31,32 @@ fun DownloadSettingsGlassy(
             GlassyTopAppBar(
                 title = "下载设置",
                 hazeState = hazeState,
-                navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
-                onNavigationClick = onBack,
+                onNavigationClick = onBack
             )
-        },
-        modifier = modifier,
+        }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .haze(state = hazeState)
+                .padding(padding),
             contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 下载路径
+            // ============= 下载性能 =============
             item {
-                Text(
-                    text = "下载路径",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-                )
-            }
-            
-            item {
-                GlassySettingsCard(
-                    icon = Icons.Outlined.FolderOpen,
-                    title = "存储位置",
-                    subtitle = if (settings.downloadDirUri.isNullOrBlank()) {
-                        "默认内部存储"
-                    } else {
-                        "自定义路径"
-                    },
-                    onClick = {
-                        // TODO: 实现 SAF 目录选择
-                    },
-                    hazeState = hazeState,
-                )
-            }
-            
-            // 下载性能
-            item {
-                Text(
-                    text = "下载性能",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "下载性能",
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
             item {
                 GlassySlider(
                     title = "并发下载数",
-                    subtitle = "同时下载的任务数量",
                     value = settings.downloadConcurrency.toFloat(),
                     onValueChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setDownloadConcurrency(it.toInt())
                         }
                     },
@@ -95,55 +64,35 @@ fun DownloadSettingsGlassy(
                     steps = 2,
                     valueLabel = { "${it.toInt()} 个" },
                     hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
-            // 本地搜索
+            // ============= 下载管理 =============
             item {
-                Text(
-                    text = "本地搜索",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "下载管理",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
             
             item {
                 GlassySwitch(
-                    title = "启用本地搜索",
-                    subtitle = "在下载页搜索已下载内容",
+                    title = "本地搜索",
+                    subtitle = "在已下载内容中搜索",
                     checked = settings.localSearchEnabled,
                     onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setLocalSearchEnabled(it)
                         }
                     },
                     hazeState = hazeState,
-                )
-            }
-            
-            // 通知栏快捷
-            item {
-                Text(
-                    text = "快捷功能",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
             item {
-                GlassySwitch(
-                    title = "通知栏稍后再看",
-                    subtitle = "常驻通知快速收藏漫画",
-                    checked = settings.readLaterNotificationEnabled,
-                    onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
-                            container.settingsStore.setReadLaterNotificationEnabled(it)
-                        }
-                    },
-                    hazeState = hazeState,
-                )
+                Spacer(Modifier.height(8.dp))
             }
         }
     }

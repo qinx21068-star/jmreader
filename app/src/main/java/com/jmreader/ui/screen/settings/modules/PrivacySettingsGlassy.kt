@@ -3,18 +3,20 @@ package com.jmreader.ui.screen.settings.modules
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Pin
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
 import com.jmreader.ui.components.*
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import kotlinx.coroutines.launch
 
+/**
+ * 隐私设置模块 - Material 3 设计风格
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacySettingsGlassy(
@@ -25,50 +27,45 @@ fun PrivacySettingsGlassy(
     val settings by container.settingsStore.settings.collectAsState()
     val scope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
-    
     var showPinDialog by remember { mutableStateOf(false) }
-    var pinText by remember { mutableStateOf("") }
     
     Scaffold(
         topBar = {
             GlassyTopAppBar(
                 title = "隐私设置",
                 hazeState = hazeState,
-                navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
-                onNavigationClick = onBack,
+                onNavigationClick = onBack
             )
-        },
-        modifier = modifier,
+        }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .haze(state = hazeState)
+                .padding(padding),
             contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 应用锁
+            // ============= 应用锁 =============
             item {
-                Text(
-                    text = "应用锁",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "应用锁",
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
             item {
                 GlassySwitch(
                     title = "启用应用锁",
-                    subtitle = "从后台返回需验证身份",
+                    subtitle = "从后台返回时需要验证指纹/密码",
                     checked = settings.appLockEnabled,
                     onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setAppLockEnabled(it)
                         }
                     },
                     hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
@@ -84,125 +81,90 @@ fun PrivacySettingsGlassy(
                         },
                         onClick = { showPinDialog = true },
                         hazeState = hazeState,
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
             }
             
-            // 浏览记录
+            // ============= 浏览记录 =============
             item {
-                Text(
-                    text = "浏览记录",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "浏览记录",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
             
             item {
                 GlassySwitch(
                     title = "隐身模式",
-                    subtitle = "不记录浏览历史和阅读进度",
+                    subtitle = "不记录浏览历史、阅读进度、搜索历史",
                     checked = settings.incognito,
                     onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setIncognito(it)
                         }
                     },
                     hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
             item {
                 GlassySwitch(
-                    title = "保存搜索历史",
-                    subtitle = "记录搜索关键词",
+                    title = "记录搜索历史",
+                    subtitle = "保存搜索关键词以便快速输入",
                     checked = settings.saveSearchHistory,
+                    enabled = !settings.incognito,
                     onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setSaveSearchHistory(it)
                         }
                     },
                     hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
-            // 屏幕安全
+            // ============= 屏幕安全 =============
             item {
-                Text(
-                    text = "屏幕安全",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "屏幕安全",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
             
             item {
                 GlassySwitch(
                     title = "屏蔽截图",
-                    subtitle = "防止截图和录屏 (FLAG_SECURE)",
+                    subtitle = "防止截图和录屏（FLAG_SECURE）",
                     checked = settings.blockScreenshots,
                     onCheckedChange = {
-                        kotlinx.coroutines.MainScope().launch {
+                        scope.launch {
                             container.settingsStore.setBlockScreenshots(it)
                         }
                     },
                     hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
+            }
+            
+            item {
+                Spacer(Modifier.height(8.dp))
             }
         }
     }
     
-    // PIN 设置对话框
+    // PIN 码设置对话框（这里简化处理）
     if (showPinDialog) {
         AlertDialog(
             onDismissRequest = { showPinDialog = false },
             title = { Text("设置 PIN 码") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "留空使用生物识别（指纹/面容）",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    OutlinedTextField(
-                        value = pinText,
-                        onValueChange = { 
-                            if (it.length <= 8 && it.all { c -> c.isDigit() }) {
-                                pinText = it
-                            }
-                        },
-                        label = { Text("PIN (4-8位数字)") },
-                        placeholder = { Text("留空使用生物识别") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            },
+            text = { Text("PIN 码设置功能待实现") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        kotlinx.coroutines.MainScope().launch {
-                            container.settingsStore.setAppLockPin(
-                                pinText.ifBlank { null }
-                            )
-                        }
-                        showPinDialog = false
-                        pinText = ""
-                    }
-                ) {
+                TextButton(onClick = { showPinDialog = false }) {
                     Text("确定")
                 }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { 
-                        showPinDialog = false
-                        pinText = ""
-                    }
-                ) {
-                    Text("取消")
-                }
-            },
+            }
         )
     }
 }

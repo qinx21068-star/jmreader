@@ -2,27 +2,24 @@ package com.jmreader.ui.screen.settings.modules
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
 import com.jmreader.ui.components.*
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
 
+/**
+ * 关于设置模块 - Material 3 设计风格
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSettingsGlassy(
     container: AppContainer,
     onBack: () -> Unit,
-    onOpenLogs: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val hazeState = remember { HazeState() }
@@ -32,139 +29,124 @@ fun AboutSettingsGlassy(
             GlassyTopAppBar(
                 title = "关于",
                 hazeState = hazeState,
-                navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
-                onNavigationClick = onBack,
+                onNavigationClick = onBack
             )
-        },
-        modifier = modifier,
+        }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .haze(state = hazeState)
+                .padding(padding),
             contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 应用信息
+            // ============= 应用信息 =============
             item {
-                Text(
-                    text = "应用信息",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "应用信息",
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
             
             item {
-                GlassyCard(hazeState = hazeState) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        // 应用名称和版本
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "版本号",
-                                style = MaterialTheme.typography.bodyLarge,
+                                text = "JMReader",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "29.0",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary,
+                                text = "v29.0 - Material 3 Edition",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                         
-                        Divider()
+                        HorizontalDivider()
                         
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        // 更新内容
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "版本代码",
-                                style = MaterialTheme.typography.bodyLarge,
+                                text = "✨ 本次更新",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "29",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                text = "• Material 3 设计全面升级\n" +
+                                      "• 动态配色支持\n" +
+                                      "• 流畅的页面过渡动画\n" +
+                                      "• 优化设置页面排版\n" +
+                                      "• 性能优化和Bug修复",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             }
             
-            // 调试工具
+            // ============= 开源许可 =============
             item {
-                Text(
-                    text = "调试工具",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                GlassySectionTitle(
+                    title = "开源许可",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
             
             item {
-                GlassySettingsCard(
-                    title = "查看日志",
-                    subtitle = "应用运行日志和错误记录",
-                    icon = Icons.Outlined.Info,
-                    onClick = onOpenLogs,
-                    hazeState = hazeState,
-                )
-            }
-            
-            // 法律信息
-            item {
-                Text(
-                    text = "法律信息",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-                )
-            }
-            
-            item {
-                GlassySettingsCard(
-                    title = "开源协议",
-                    subtitle = "MIT License",
-                    icon = Icons.Outlined.Code,
-                    onClick = { /* TODO: 显示开源协议 */ },
-                    hazeState = hazeState,
-                )
-            }
-            
-            item {
-                GlassySettingsCard(
-                    title = "隐私政策",
-                    subtitle = "我们如何处理您的数据",
-                    icon = Icons.Outlined.Security,
-                    onClick = { /* TODO: 显示隐私政策 */ },
-                    hazeState = hazeState,
-                )
-            }
-            
-            // 免责声明
-            item {
-                Text(
-                    text = "免责声明",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-                )
-            }
-            
-            item {
-                GlassyCard(hazeState = hazeState) {
-                    Text(
-                        text = "本应用仅供学习交流使用，请勿用于非法用途。使用本应用所产生的一切后果由用户自行承担。",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "本应用基于以下开源项目：",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "• Jetpack Compose - UI 框架\n" +
+                                  "• Material 3 - 设计系统\n" +
+                                  "• Haze - 毛玻璃效果库\n" +
+                                  "• Coil - 图片加载库\n" +
+                                  "• DataStore - 数据持久化",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
+            }
+            
+            item {
+                Spacer(Modifier.height(8.dp))
             }
         }
     }

@@ -148,31 +148,69 @@ fun JMApp(container: AppContainer) {
             }
         }
     ) { inner ->
-        // 全局页面切换动画：默认仅淡入淡出（轻量，不拖累底部 tab 切换）。
-        // 进入详情/阅读器这类"压栈"语义的场景，由具体 composable 自己加 slide。
-        // 之前的 slideInHorizontally 在每次切 tab 都跑，反而让底部导航显得卡。
+        // Material 3 页面切换动画：流畅的淡入淡出 + 轻微滑动
+        // 使用 Material Motion 推荐的缓动曲线（FastOutSlowInEasing）
+        // Tab 切换：纯淡入淡出（轻量）
+        // 详情/设置：淡入淡出 + 向上滑入（压栈语义）
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
             modifier = Modifier.padding(inner),
             enterTransition = {
-                androidx.compose.animation.fadeIn(
-                    animationSpec = androidx.compose.animation.core.tween(180),
-                )
+                // 根据目标路由选择不同的动画
+                when (targetState.destination.route) {
+                    Routes.DETAIL, Routes.READER, 
+                    Routes.SETTINGS_APPEARANCE, Routes.SETTINGS_READER,
+                    Routes.SETTINGS_LIST, Routes.SETTINGS_NETWORK,
+                    Routes.SETTINGS_PRIVACY, Routes.SETTINGS_DOWNLOAD,
+                    Routes.SETTINGS_ABOUT, Routes.COMMENTS, Routes.AUTHOR -> {
+                        // 详情/设置页：向上滑入 + 淡入
+                        androidx.compose.animation.slideInVertically(
+                            animationSpec = androidx.compose.animation.core.tween(
+                                durationMillis = 300,
+                                easing = androidx.compose.animation.core.FastOutSlowInEasing
+                            ),
+                            initialOffsetY = { it / 10 } // 从底部 10% 位置滑入
+                        ) + androidx.compose.animation.fadeIn(
+                            animationSpec = androidx.compose.animation.core.tween(300)
+                        )
+                    }
+                    else -> {
+                        // Tab 切换：纯淡入
+                        androidx.compose.animation.fadeIn(
+                            animationSpec = androidx.compose.animation.core.tween(
+                                durationMillis = 250,
+                                easing = androidx.compose.animation.core.FastOutSlowInEasing
+                            )
+                        )
+                    }
+                }
             },
             exitTransition = {
+                // Tab 切换和详情页退出：淡出
                 androidx.compose.animation.fadeOut(
-                    animationSpec = androidx.compose.animation.core.tween(140),
+                    animationSpec = androidx.compose.animation.core.tween(
+                        durationMillis = 200,
+                        easing = androidx.compose.animation.core.LinearOutSlowInEasing
+                    )
                 )
             },
             popEnterTransition = {
+                // 返回时重新进入：淡入
                 androidx.compose.animation.fadeIn(
-                    animationSpec = androidx.compose.animation.core.tween(180),
+                    animationSpec = androidx.compose.animation.core.tween(250)
                 )
             },
             popExitTransition = {
-                androidx.compose.animation.fadeOut(
-                    animationSpec = androidx.compose.animation.core.tween(140),
+                // 返回时退出：向下滑出 + 淡出
+                androidx.compose.animation.slideOutVertically(
+                    animationSpec = androidx.compose.animation.core.tween(
+                        durationMillis = 250,
+                        easing = androidx.compose.animation.core.FastOutSlowInEasing
+                    ),
+                    targetOffsetY = { it / 10 }
+                ) + androidx.compose.animation.fadeOut(
+                    animationSpec = androidx.compose.animation.core.tween(250)
                 )
             },
         ) {

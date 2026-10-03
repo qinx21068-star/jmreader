@@ -65,6 +65,22 @@ enum class BlockMode { HIDE, COVER_ONLY }
 enum class ListStyle { LIST, GRID, COMPACT_GRID, CARD, MAGAZINE }
 
 /**
+ * v29.0 毛玻璃效果强度。
+ * - [LOW]：弱模糊（15dp blurRadius），适合低端设备。
+ * - [MEDIUM]：中等模糊（30dp，默认），平衡效果与性能。
+ * - [HIGH]：强模糊（45dp），毛玻璃效果最明显，稍耗性能。
+ */
+enum class GlassBlurStrength { LOW, MEDIUM, HIGH }
+
+/**
+ * v29.0 页面过渡动画速度。
+ * - [DISABLED]：关闭所有页面过渡动画（最快）。
+ * - [NORMAL]：正常速度（300ms，默认）。
+ * - [FAST]：快速（150ms），更流畅的切换体验。
+ */
+enum class AnimationSpeed { DISABLED, NORMAL, FAST }
+
+/**
  * v27.5 性能修复：加 @Immutable 让 Compose 编译器信任此类型稳定。
  * 之前因含 Set<String> customApiDomains 字段，Compose 推断为 Unstable，
  * 导致所有 collectAsState<AppSettings> 的屏幕无法 skip 重组。
@@ -148,6 +164,16 @@ data class AppSettings(
     val detailParallax: Boolean = true,
     /** 应用启动动画开关（splash 后列表淡入）。 */
     val splashAnim: Boolean = true,
+
+    // ============= v29.0 毛玻璃效果自定义 =============
+    /** 毛玻璃效果强度：LOW=弱（15dp模糊）/ MEDIUM=中（30dp，默认）/ HIGH=强（45dp）。 */
+    val glassBlurStrength: GlassBlurStrength = GlassBlurStrength.MEDIUM,
+    /** 毛玻璃背景渐变开关（开启后页面背景使用渐变色，增强毛玻璃可见度）。 */
+    val glassBackgroundEnabled: Boolean = true,
+    
+    // ============= v29.0 动画自定义 =============
+    /** 页面过渡动画速度：DISABLED=关闭 / NORMAL=正常（300ms，默认）/ FAST=快速（150ms）。 */
+    val animationSpeed: AnimationSpeed = AnimationSpeed.NORMAL,
 
     // ============= v27.5 隐私 =============
     /** 应用锁开关。开启后从后台返回前台需验证指纹/密码。 */
