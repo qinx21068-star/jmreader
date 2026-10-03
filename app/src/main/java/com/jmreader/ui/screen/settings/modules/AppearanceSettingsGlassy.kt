@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +52,7 @@ fun AppearanceSettingsGlassy(
     modifier: Modifier = Modifier,
 ) {
     val settings by container.settingsStore.settings.collectAsState()
+    val scope = rememberCoroutineScope()
     val scope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
     

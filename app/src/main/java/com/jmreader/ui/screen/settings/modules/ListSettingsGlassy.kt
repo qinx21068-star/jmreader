@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
@@ -22,6 +24,7 @@ fun ListSettingsGlassy(
     modifier: Modifier = Modifier,
 ) {
     val settings by container.settingsStore.settings.collectAsState()
+    val scope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
     
     Scaffold(
