@@ -35,26 +35,16 @@ fun GlassyCard(
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
     shape: Shape = MaterialTheme.shapes.extraLarge,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     blurRadius: Dp = 20.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val cardModifier = if (hazeState != null) {
-        modifier
-            .hazeChild(
-                state = hazeState,
-                style = HazeStyle(
-                    blurRadius = blurRadius,
-                    tint = backgroundColor,
-                )
-            )
-            .clip(shape)
-    } else {
-        modifier
-            .clip(shape)
-            .background(backgroundColor)
-    }
+    // 使用实心卡片，不应用模糊效果
+    // 毛玻璃效果应该只用在顶部导航栏等浮动元素
+    val cardModifier = modifier
+        .clip(shape)
+        .background(backgroundColor)
     
     val finalModifier = if (onClick != null) {
         cardModifier.clickable(onClick = onClick)
@@ -140,7 +130,7 @@ fun GlassySettingsCard(
         modifier = modifier.fillMaxWidth(),
         hazeState = hazeState,
         shape = MaterialTheme.shapes.extraLarge,
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
         blurRadius = 20.dp,
         onClick = onClick
     ) {
@@ -216,7 +206,7 @@ fun GlassySwitch(
     GlassyCard(
         modifier = modifier.fillMaxWidth(),
         hazeState = hazeState,
-        backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+        backgroundColor = MaterialTheme.colorScheme.surface,
         blurRadius = 20.dp
     ) {
         Row(
@@ -282,7 +272,7 @@ fun GlassySlider(
     GlassyCard(
         modifier = modifier.fillMaxWidth(),
         hazeState = hazeState,
-        backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+        backgroundColor = MaterialTheme.colorScheme.surface,
         blurRadius = 20.dp
     ) {
         // 标题 + 副标题（可选）+ 当前值

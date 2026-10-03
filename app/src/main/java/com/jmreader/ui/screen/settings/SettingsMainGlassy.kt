@@ -161,15 +161,6 @@ fun SettingsMainGlassy(
                     .padding(horizontal = 20.dp)
             )
             
-            Text(
-                text = "✨ RikkaHub 毛玻璃风格 UI",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            )
-            
             Spacer(Modifier.height(32.dp))
         }
     }
