@@ -3,6 +3,7 @@ package com.jmreader.ui.screen.settings.modules
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,6 +57,7 @@ fun DownloadSettingsGlassy(
             
             item {
                 GlassySettingsCard(
+                    icon = Icons.Outlined.FolderOpen,
                     title = "存储位置",
                     subtitle = if (settings.downloadDirUri.isNullOrBlank()) {
                         "默认内部存储"

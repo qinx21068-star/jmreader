@@ -53,7 +53,6 @@ fun AppearanceSettingsGlassy(
 ) {
     val settings by container.settingsStore.settings.collectAsState()
     val scope = rememberCoroutineScope()
-    val scope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
     
     Scaffold(
@@ -177,7 +176,7 @@ fun AppearanceSettingsGlassy(
                 value = settings.cardCornerRadius,
                 onValueChange = { scope.launch { container.settingsStore.setCardCornerRadius(it) } },
                 valueRange = 4f..28f,
-                valueFormatter = { "${it.toInt()} dp" },
+                valueLabel = { "${it.toInt()} dp" },
                 hazeState = hazeState,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
@@ -187,7 +186,7 @@ fun AppearanceSettingsGlassy(
                 value = settings.cardElevation,
                 onValueChange = { scope.launch { container.settingsStore.setCardElevation(it) } },
                 valueRange = 0f..8f,
-                valueFormatter = { "${it.toInt()} dp" },
+                valueLabel = { "${it.toInt()} dp" },
                 hazeState = hazeState,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )

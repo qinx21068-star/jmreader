@@ -3,6 +3,8 @@ package com.jmreader.ui.screen.settings.modules
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.VpnKey
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -103,6 +105,7 @@ fun NetworkSettingsGlassy(
             
             item {
                 GlassySettingsCard(
+                    icon = Icons.Outlined.VpnKey,
                     title = "HTTP/SOCKS5 代理",
                     subtitle = if (settings.proxy.isNullOrBlank()) {
                         "未设置"
@@ -126,6 +129,7 @@ fun NetworkSettingsGlassy(
             
             item {
                 GlassySettingsCard(
+                    icon = Icons.Outlined.Lock,
                     title = "锁定图片 CDN",
                     subtitle = if (settings.pinnedImageCdn.isNullOrBlank()) {
                         "自动轮换 (推荐)"
