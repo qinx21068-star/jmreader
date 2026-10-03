@@ -327,3 +327,45 @@ fun GlassySlider(
         )
     }
 }
+
+/**
+ * 带毛玻璃导航栏的 Scaffold
+ * 
+ * 用于快速升级现有页面，只需替换 Scaffold 为 GlassyScaffold
+ * 自动处理 HazeState 和 haze 背景层
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GlassyScaffold(
+    title: String,
+    onNavigationClick: () -> Unit,
+    navigationIcon: ImageVector,
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val hazeState = remember { HazeState() }
+    
+    Scaffold(
+        topBar = {
+            GlassyTopAppBar(
+                title = title,
+                onNavigationClick = onNavigationClick,
+                navigationIcon = navigationIcon,
+                hazeState = hazeState,
+                actions = actions
+            )
+        },
+        floatingActionButton = floatingActionButton,
+        modifier = modifier
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .haze(state = hazeState)
+        ) {
+            content(paddingValues)
+        }
+    }
+}

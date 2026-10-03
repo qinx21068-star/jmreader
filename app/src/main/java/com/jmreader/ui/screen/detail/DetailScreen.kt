@@ -5,6 +5,7 @@
 
 package com.jmreader.ui.screen.detail
 
+import com.jmreader.ui.components.GlassyScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable

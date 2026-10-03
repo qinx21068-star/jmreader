@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
 import com.jmreader.data.dto.JmCommentDto
 import com.jmreader.data.repository.Resource
+import com.jmreader.ui.components.GlassyScaffold
 import com.jmreader.ui.screen.forum.JmLinkedText
 import com.jmreader.ui.screen.forum.LoadingShield
 import kotlinx.coroutines.CancellationException
@@ -168,28 +169,15 @@ fun CommentsScreen(
         if (comments.isEmpty() && (loadTrigger == 0 || error != null)) loadPage(page.coerceAtLeast(1))
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = if (totalCount > 0) "评论 ($totalCount)" else "评论",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { loadPage(page) }) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
-                    }
-                },
-            )
-        },
+    GlassyScaffold(
+        title = if (totalCount > 0) "评论 ($totalCount)" else "评论",
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+        actions = {
+            IconButton(onClick = { loadPage(page) }) {
+                Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
+            }
+        }
     ) { inner ->
         Box(
             Modifier

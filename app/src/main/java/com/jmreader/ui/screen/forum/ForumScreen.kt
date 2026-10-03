@@ -2,6 +2,7 @@
 
 package com.jmreader.ui.screen.forum
 
+import com.jmreader.ui.components.GlassyScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
