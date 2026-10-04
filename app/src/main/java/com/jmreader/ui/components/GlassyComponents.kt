@@ -77,21 +77,22 @@ fun GlassyTopAppBar(
     title: String,
     hazeState: HazeState? = null,
     blurRadius: Dp = 30.dp,
+    glassEnabled: Boolean = true,
     navigationIcon: ImageVector = Icons.AutoMirrored.Outlined.ArrowBack,
     onNavigationClick: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val appBarModifier = if (hazeState != null) {
+    val appBarModifier = if (glassEnabled && hazeState != null) {
         modifier.hazeChild(
             state = hazeState,
             style = HazeStyle(
                 blurRadius = blurRadius,
-                tint = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),  // 降低不透明度，使用 surfaceContainer
+                tint = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),
             )
         )
     } else {
-        modifier.background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
+        modifier.background(MaterialTheme.colorScheme.surfaceContainer)
     }
     
     TopAppBar(

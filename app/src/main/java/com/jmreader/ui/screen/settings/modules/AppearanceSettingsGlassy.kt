@@ -57,6 +57,12 @@ fun AppearanceSettingsGlassy(
             GlassyTopAppBar(
                 title = "外观设置",
                 hazeState = hazeState,
+                blurRadius = when (settings.glassBlurStrength) {
+                    GlassBlurStrength.LOW -> 15.dp
+                    GlassBlurStrength.MEDIUM -> 30.dp
+                    GlassBlurStrength.HIGH -> 45.dp
+                },
+                glassEnabled = settings.glassBackgroundEnabled,
                 onNavigationClick = onBack
             )
         }

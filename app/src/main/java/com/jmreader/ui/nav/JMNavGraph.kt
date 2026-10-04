@@ -37,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jmreader.R
 import com.jmreader.data.AppContainer
+import com.jmreader.data.local.AnimationSpeed
 import com.jmreader.ui.screen.author.AuthorScreen
 import com.jmreader.ui.screen.comment.CommentsScreen
 import com.jmreader.ui.screen.detail.DetailScreen
@@ -102,6 +103,11 @@ fun JMApp(container: AppContainer) {
 
     // 详情/阅读器为全屏，不显示底部栏
     val showBottomBar = currentRoute != null && currentRoute in tabRoutes
+    val motionDuration = when (settings.animationSpeed) {
+        AnimationSpeed.DISABLED -> 0
+        AnimationSpeed.FAST -> 150
+        AnimationSpeed.NORMAL -> 300
+    }
 
     Scaffold(
         // v27.6 修复：键盘弹出时推高底部导航栏，避免遮挡 tab 导致点不到
@@ -167,7 +173,7 @@ fun JMApp(container: AppContainer) {
                         // 详情/设置页：向上滑入 + 淡入
                         androidx.compose.animation.slideInVertically(
                             animationSpec = androidx.compose.animation.core.tween(
-                                durationMillis = 300,
+                                durationMillis = motionDuration,
                                 easing = androidx.compose.animation.core.FastOutSlowInEasing
                             ),
                             initialOffsetY = { it / 10 } // 从底部 10% 位置滑入
@@ -179,7 +185,7 @@ fun JMApp(container: AppContainer) {
                         // Tab 切换：纯淡入
                         androidx.compose.animation.fadeIn(
                             animationSpec = androidx.compose.animation.core.tween(
-                                durationMillis = 250,
+                                durationMillis = (motionDuration * 5 / 6),
                                 easing = androidx.compose.animation.core.FastOutSlowInEasing
                             )
                         )
@@ -190,7 +196,7 @@ fun JMApp(container: AppContainer) {
                 // Tab 切换和详情页退出：淡出
                 androidx.compose.animation.fadeOut(
                     animationSpec = androidx.compose.animation.core.tween(
-                        durationMillis = 200,
+                        durationMillis = (motionDuration * 2 / 3),
                         easing = androidx.compose.animation.core.LinearOutSlowInEasing
                     )
                 )
@@ -205,7 +211,7 @@ fun JMApp(container: AppContainer) {
                 // 返回时退出：向下滑出 + 淡出
                 androidx.compose.animation.slideOutVertically(
                     animationSpec = androidx.compose.animation.core.tween(
-                        durationMillis = 250,
+                        durationMillis = (motionDuration * 5 / 6),
                         easing = androidx.compose.animation.core.FastOutSlowInEasing
                     ),
                     targetOffsetY = { it / 10 }
