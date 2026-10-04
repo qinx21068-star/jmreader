@@ -20,6 +20,7 @@ import dev.chrisbanes.haze.haze
 fun AboutSettingsGlassy(
     container: AppContainer,
     onBack: () -> Unit,
+    onOpenLogs: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val hazeState = remember { HazeState() }

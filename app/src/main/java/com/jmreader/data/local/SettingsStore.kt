@@ -108,7 +108,7 @@ data class AppSettings(
     /** 音量键翻页：阅读器中按音量上/下键翻页（仅左右翻页模式生效，避免与竖滑滚动冲突）。 */
     val volumeKeyPaging: Boolean = false,
     /** v27.4 配色方案 id（对应 PresetScheme.id 或 CUSTOM_SCHEME_ID）。默认蓝白。 */
-    val colorSchemeId: String = "kazumi_blue",
+    val colorSchemeId: String = "material_you",
     /** v27.4 自定义颜色（仅当 colorSchemeId == CUSTOM_SCHEME_ID 时使用）。null=未配置。 */
     val customColors: CustomColors? = null,
     /** v27.4 背景图片 URI（content://... 形式，需 takePersistableUriPermission）。null=无背景图。 */
@@ -318,7 +318,7 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
             serverUrl = "",
             themeMode = ThemeMode.SYSTEM,
             readerDirection = ReaderDirection.VERTICAL,
-            dynamicColor = false,
+            dynamicColor = true,
             loggedInUser = null,
             lastComicId = null,
             lastChapterId = null,
@@ -373,7 +373,7 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
                 else -> ReaderDirection.valueOf(p[Keys.READER_DIR] ?: "VERTICAL")
             }
         }.getOrDefault(ReaderDirection.VERTICAL),
-        dynamicColor = p[Keys.DYNAMIC_COLOR] ?: false,
+        dynamicColor = p[Keys.DYNAMIC_COLOR] ?: true,
         loggedInUser = p[Keys.LOGGED_USER],
         lastComicId = p[Keys.LAST_COMIC],
         lastChapterId = p[Keys.LAST_CHAPTER],
@@ -383,7 +383,7 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         disclaimerAccepted = p[Keys.DISCLAIMER_ACCEPTED] ?: false,
         listStyle = runCatching { ListStyle.valueOf(p[Keys.LIST_STYLE] ?: "LIST") }.getOrDefault(ListStyle.LIST),
         volumeKeyPaging = p[Keys.VOLUME_KEY_PAGING] ?: false,
-        colorSchemeId = p[Keys.COLOR_SCHEME_ID] ?: "kazumi_blue",
+        colorSchemeId = p[Keys.COLOR_SCHEME_ID] ?: "material_you",
         customColors = p[Keys.CUSTOM_COLORS]?.let { raw ->
             // v27.5 稳定性加固：CustomColors.decode 可能因存储格式升级/数据损坏抛异常，
             // 未捕获会让整个 settings flow 崩溃 → 全局设置丢失 → App 无法启动。
@@ -409,7 +409,7 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         nightModeFilter = p[Keys.NIGHT_MODE_FILTER] ?: false,
         nightModeFilterStrength = (p[Keys.NIGHT_MODE_FILTER_STRENGTH] ?: 0.3f).coerceIn(0f, 1f),
         // v27.5 列表/UI
-        cardCornerRadius = p[Keys.CARD_CORNER_RADIUS] ?: 14f,
+        cardCornerRadius = p[Keys.CARD_CORNER_RADIUS] ?: 24f,
         cardElevation = p[Keys.CARD_ELEVATION] ?: 0f,
         cornerMode = runCatching { CornerMode.valueOf(p[Keys.CORNER_MODE] ?: "UNIFIED") }.getOrDefault(CornerMode.UNIFIED),
         listTitleFontSize = p[Keys.LIST_TITLE_FONT_SIZE] ?: 13f,

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -291,7 +292,7 @@ private fun CommentsListContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         itemsIndexed(comments, key = { i, c -> c.cid.ifBlank { "idx_$i" } }) { _, c ->
-            CommentCard(comment = c, onOpenComic = onOpenComic)
+            CommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItem())
         }
         // 分页栏：首页 / 上一页 / 页码(可点跳页) / 下一页 / 末页
         item(key = "pagination") {
@@ -387,10 +388,14 @@ private fun PageJumpDialog(
 }
 
 @Composable
-private fun CommentCard(comment: JmCommentDto, onOpenComic: (String) -> Unit) {
+private fun CommentCard(
+    comment: JmCommentDto,
+    onOpenComic: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val ctx = LocalContext.current
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .combinedClickable(
                 onClick = {},

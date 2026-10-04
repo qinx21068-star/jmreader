@@ -2,8 +2,13 @@ package com.jmreader.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -45,6 +50,7 @@ fun GlassyCard(
     // 使用实心卡片，不应用模糊效果
     // 毛玻璃效果应该只用在顶部导航栏等浮动元素
     val cardModifier = modifier
+        .animateContentSize()
         .clip(shape)
         .background(backgroundColor)
     
@@ -205,14 +211,22 @@ fun GlassySwitch(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val switchTrackColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surfaceVariant,
+        animationSpec = tween(180),
+        label = "switch_track",
+    )
     GlassyCard(
         modifier = modifier.fillMaxWidth(),
         hazeState = hazeState,
-        backgroundColor = MaterialTheme.colorScheme.surface,
+        backgroundColor = switchTrackColor,
         blurRadius = 20.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -271,6 +285,11 @@ fun GlassySlider(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val animatedValue by animateFloatAsState(
+        targetValue = value,
+        animationSpec = tween(120),
+        label = "slider_value",
+    )
     GlassyCard(
         modifier = modifier.fillMaxWidth(),
         hazeState = hazeState,
@@ -316,7 +335,7 @@ fun GlassySlider(
         
         // 滑块
         Slider(
-            value = value,
+            value = animatedValue,
             onValueChange = onValueChange,
             valueRange = valueRange,
             steps = steps,
@@ -345,6 +364,7 @@ fun GlassyScaffold(
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val hazeState = remember { HazeState() }
@@ -360,6 +380,7 @@ fun GlassyScaffold(
             )
         },
         floatingActionButton = floatingActionButton,
+        snackbarHost = snackbarHost,
         modifier = modifier
     ) { paddingValues ->
         Box(

@@ -176,10 +176,10 @@ fun ReaderSettingsGlassy(
                 GlassySwitch(
                     title = "双指缩放",
                     subtitle = "支持双指缩放查看细节",
-                    checked = settings.pinchToZoom,
+                    checked = settings.pinchZoom,
                     onCheckedChange = {
                         scope.launch {
-                            container.settingsStore.setPinchToZoom(it)
+                            container.settingsStore.setPinchZoom(it)
                         }
                     },
                     hazeState = hazeState,
@@ -217,7 +217,7 @@ fun ReaderSettingsGlassy(
                         value = settings.autoScrollSpeed.toFloat(),
                         onValueChange = {
                             scope.launch {
-                                container.settingsStore.setAutoScrollSpeed(it.toInt())
+                                container.settingsStore.setAutoScrollSpeed(it)
                             }
                         },
                         valueRange = 1f..30f,

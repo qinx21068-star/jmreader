@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -442,17 +443,10 @@ fun DetailScreen(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(state.detail?.name ?: "加载中…", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-            )
-        },
+    GlassyScaffold(
+        title = state.detail?.name ?: "加载中…",
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
         snackbarHost = { SnackbarHost(snackbar) },
     ) { inner ->
         Box(Modifier.fillMaxSize().padding(inner)) {
@@ -833,6 +827,7 @@ private fun DetailContent(
             // 整行可点击进入阅读（之前只有内嵌 Button 可点，点空白处无反应）
             Row(
                 Modifier
+                    .animateItem()
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
@@ -943,7 +938,7 @@ private fun RelatedComicsRow(
         ) {
             itemsIndexed(comics, key = { i, c -> c.id.ifBlank { "idx_$i" } }) { _, c ->
                 val click = remember(c, onOpenComic) { { onOpenComic(c.id) } }
-                RelatedComicCard(c, onClick = click)
+                RelatedComicCard(c, onClick = click, modifier = Modifier.animateItem())
             }
         }
     }
@@ -951,10 +946,14 @@ private fun RelatedComicsRow(
 
 /** 横向列表中的单卡片：封面 + 标题，固定宽度，纵向布局。 */
 @Composable
-private fun RelatedComicCard(comic: ComicBriefDto, onClick: () -> Unit) {
+private fun RelatedComicCard(
+    comic: ComicBriefDto,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val ctx = LocalContext.current
     Column(
-        modifier = Modifier
+        modifier = modifier
             .width(100.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick),

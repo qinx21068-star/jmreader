@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -233,6 +234,7 @@ private fun ComicListColumn(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
+                    modifier = Modifier.animateItem(),
                 )
             } else {
                 ComicCard(
@@ -240,6 +242,7 @@ private fun ComicListColumn(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -325,6 +328,7 @@ private fun ComicListGrid(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
+                    modifier = Modifier.animateItem(),
                 )
             } else {
                 ComicGridCard(
@@ -332,6 +336,7 @@ private fun ComicListGrid(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -494,6 +499,7 @@ fun ComicCard(
                     ImageRequest.Builder(ctx)
                         .data(cover)
                         .size(220, 314)
+                        .crossfade(true)
                         .build()
                 },
                 placeholder = placeholderPainter,
@@ -628,6 +634,7 @@ fun ComicGridCard(
                     ImageRequest.Builder(ctx)
                         .data(cover)
                         .size(300, 428)
+                        .crossfade(true)
                         .build()
                 },
                 placeholder = placeholderPainter,
@@ -735,6 +742,7 @@ fun ComicCardStyle(
                     ImageRequest.Builder(ctx)
                         .data(cover)
                         .size(400, 572)
+                        .crossfade(true)
                         .build()
                 },
                 placeholder = placeholderPainter,
@@ -858,6 +866,7 @@ fun ComicMagazineCard(
                     ImageRequest.Builder(ctx)
                         .data(cover)
                         .size(300, 428)
+                        .crossfade(true)
                         .build()
                 },
                 placeholder = placeholderPainter,
@@ -977,17 +986,23 @@ private fun BlockedCover(modifier: Modifier = Modifier) {
 
 @Composable
 fun LoadingBox(modifier: Modifier = Modifier, message: String? = null) {
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator(modifier = Modifier.size(36.dp))
-            if (!message.isNullOrBlank()) {
-                Text(
-                    message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 12.dp),
-                )
-            }
+    // Material 3 加载骨架：比单一转圈更能表达内容结构，减少等待焦虑。
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        repeat(4) {
+            ShimmerCard()
+        }
+        if (!message.isNullOrBlank()) {
+            Text(
+                message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
         }
     }
 }

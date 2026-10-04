@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -164,27 +165,14 @@ fun ForumScreen(
         if (comments.isEmpty() && loadTrigger == 0) loadPage(page.coerceAtLeast(1))
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = if (totalCount > 0) "讨论区 ($totalCount)" else "讨论区",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { loadPage(page) }) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
-                    }
-                },
-            )
+    GlassyScaffold(
+        title = if (totalCount > 0) "讨论区 ($totalCount)" else "讨论区",
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+        actions = {
+            IconButton(onClick = { loadPage(page) }) {
+                Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
+            }
         },
     ) { inner ->
         Box(
@@ -325,7 +313,7 @@ private fun ForumListContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         itemsIndexed(comments, key = { i, c -> c.cid.ifBlank { "idx_$i" } }) { _, c ->
-            ForumCommentCard(comment = c, onOpenComic = onOpenComic)
+            ForumCommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItem())
         }
         // 分页栏：首页 / 上一页 / 页码(可点跳页) / 下一页 / 末页
         item(key = "pagination") {
@@ -419,10 +407,14 @@ private fun ForumPageJumpDialog(
 }
 
 @Composable
-private fun ForumCommentCard(comment: JmCommentDto, onOpenComic: (String) -> Unit) {
+private fun ForumCommentCard(
+    comment: JmCommentDto,
+    onOpenComic: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val ctx = LocalContext.current
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .combinedClickable(
                 onClick = {},
