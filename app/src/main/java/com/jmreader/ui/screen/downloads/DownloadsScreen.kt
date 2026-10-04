@@ -54,6 +54,7 @@ import com.jmreader.data.AppContainer
 import com.jmreader.data.download.DownloadStatus
 import com.jmreader.data.download.DownloadTask
 import com.jmreader.ui.components.EmptyBox
+import com.jmreader.ui.components.GlassyScaffold
 import com.jmreader.ui.nav.Routes
 import kotlinx.coroutines.launch
 
@@ -102,28 +103,19 @@ fun DownloadsScreen(container: AppContainer, navController: NavController) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("下载管理 (${tasks.size})") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                    // v27.5 #17 SAF 路径选择：选外置 SD 卡目录
-                    IconButton(onClick = { saFLauncher.launch(null) }) {
-                        Icon(Icons.Outlined.Folder, contentDescription = "选择下载路径")
-                    }
-                    // 一键清空（带确认对话框，避免误触）
-                    if (tasks.isNotEmpty()) {
-                        IconButton(onClick = { showClearAll = true }) {
-                            Icon(Icons.Outlined.DeleteSweep, contentDescription = "清空全部")
-                        }
-                    }
-                },
-            )
+    GlassyScaffold(
+        title = "下载管理 (${tasks.size})",
+        onNavigationClick = { navController.popBackStack() },
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+        actions = {
+            IconButton(onClick = { saFLauncher.launch(null) }) {
+                Icon(Icons.Outlined.Folder, contentDescription = "选择下载路径")
+            }
+            if (tasks.isNotEmpty()) {
+                IconButton(onClick = { showClearAll = true }) {
+                    Icon(Icons.Outlined.DeleteSweep, contentDescription = "清空全部")
+                }
+            }
         },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { inner ->

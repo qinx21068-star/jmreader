@@ -58,6 +58,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jmreader.core.Logger
 import com.jmreader.data.AppContainer
+import com.jmreader.ui.components.GlassyScaffold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Semaphore
@@ -247,24 +248,17 @@ fun DomainManageScreen(container: AppContainer, onBack: () -> Unit) {
     // 删除确认：记录待删除的域名，确认后才真正删除
     var deleteTarget by remember { mutableStateOf<DomainItem?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("API 域名管理") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { vm.refreshFromServer() }, enabled = !anyTesting) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "拉取最新域名")
-                    }
-                    IconButton(onClick = { showAdd = true; newHost = "" }, enabled = !anyTesting) {
-                        Icon(Icons.Outlined.Add, contentDescription = "添加域名")
-                    }
-                },
-            )
+    GlassyScaffold(
+        title = "API 域名管理",
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+        actions = {
+            IconButton(onClick = { vm.refreshFromServer() }, enabled = !anyTesting) {
+                Icon(Icons.Outlined.Refresh, contentDescription = "拉取最新域名")
+            }
+            IconButton(onClick = { showAdd = true; newHost = "" }, enabled = !anyTesting) {
+                Icon(Icons.Outlined.Add, contentDescription = "添加域名")
+            }
         },
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {

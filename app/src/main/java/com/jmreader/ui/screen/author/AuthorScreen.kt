@@ -43,6 +43,7 @@ import com.jmreader.data.AppContainer
 import com.jmreader.data.dto.ComicBriefDto
 import com.jmreader.data.repository.Resource
 import com.jmreader.ui.components.ComicList
+import com.jmreader.ui.components.GlassyScaffold
 import com.jmreader.ui.components.EmptyBox
 import com.jmreader.ui.components.ErrorBox
 import com.jmreader.ui.components.LoadingBox
@@ -166,31 +167,10 @@ fun AuthorScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = vm.author,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = "作者作品集",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-            )
-        },
+    GlassyScaffold(
+        title = vm.author,
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
         snackbarHost = { SnackbarHost(snackbar) },
     ) { inner ->
         Column(Modifier.fillMaxSize().padding(inner)) {

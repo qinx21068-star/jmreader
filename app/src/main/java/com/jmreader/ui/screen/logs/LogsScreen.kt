@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jmreader.core.Logger
+import com.jmreader.ui.components.GlassyScaffold
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -82,40 +83,27 @@ fun LogsScreen(onBack: () -> Unit) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("日志 (${shown.size}/${entries.size})") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+    GlassyScaffold(
+        title = "日志 (${shown.size}/${entries.size})",
+        onNavigationClick = onBack,
+        navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+        actions = {
+            IconButton(onClick = {
+                try {
+                    val text = Logger.export()
+                    val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, "一根葱 日志")
+                        putExtra(android.content.Intent.EXTRA_TEXT, text)
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        // v27.5 稳定性加固：startActivity 可能抛 ActivityNotFoundException
-                        //（无邮件/分享应用）或 SecurityException（权限问题），未捕获会杀进程。
-                        try {
-                            val text = Logger.export()
-                            val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, "一根葱 日志")
-                                putExtra(android.content.Intent.EXTRA_TEXT, text)
-                            }
-                            ctx.startActivity(android.content.Intent.createChooser(send, "分享日志"))
-                        } catch (e: android.content.ActivityNotFoundException) {
-                            com.jmreader.core.Logger.w("Logs", "无应用可分享日志: ${e.message}")
-                            scope.launch { snackbar.showSnackbar("未找到可分享的应用") }
-                        } catch (e: Throwable) {
-                            com.jmreader.core.Logger.w("Logs", "分享日志失败: ${com.jmreader.core.Logger.brief(e)}")
-                            scope.launch { snackbar.showSnackbar("分享失败：${e.message ?: "未知错误"}") }
-                        }
-                    }) { Icon(Icons.Outlined.Share, contentDescription = "分享") }
-                    IconButton(onClick = { showClearConfirm = true }) {
-                        Icon(Icons.Outlined.Delete, contentDescription = "清空")
-                    }
-                },
-            )
+                    ctx.startActivity(android.content.Intent.createChooser(send, "分享日志"))
+                } catch (_: Throwable) {
+                    scope.launch { snackbar.showSnackbar("分享失败") }
+                }
+            }) { Icon(Icons.Outlined.Share, contentDescription = "分享") }
+            IconButton(onClick = { showClearConfirm = true }) {
+                Icon(Icons.Outlined.Delete, contentDescription = "清空")
+            }
         },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { inner ->
