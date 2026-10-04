@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -139,7 +140,7 @@ fun LogsScreen(onBack: () -> Unit) {
                 }
             }
             items(shown, key = { it.seq }) { e ->
-                LogRow(e, onCopy = { msg ->
+                LogRow(e, modifier = Modifier.animateItem(), onCopy = { msg ->
                     val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
                     cm?.setPrimaryClip(android.content.ClipData.newPlainText("log", msg))
                     scope.launch { snackbar.showSnackbar("已复制") }
@@ -169,7 +170,7 @@ fun LogsScreen(onBack: () -> Unit) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun LogRow(e: Logger.Entry, onCopy: (String) -> Unit) {
+private fun LogRow(e: Logger.Entry, modifier: Modifier = Modifier, onCopy: (String) -> Unit) {
     val fmt = remember { SimpleDateFormat("HH:mm:ss.SSS", Locale.US) }
     val color = when (e.level) {
         Logger.Level.V, Logger.Level.D -> Color(0xFF9E9E9E)
@@ -179,7 +180,7 @@ private fun LogRow(e: Logger.Entry, onCopy: (String) -> Unit) {
     }
     // 长按复制整条日志（含时间/级别/tag/消息），便于用户排查时贴到别处
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .combinedClickable(

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
@@ -179,6 +180,7 @@ fun DownloadsScreen(container: AppContainer, navController: NavController) {
                             onOpen = onOpen,
                             onRetry = onRetry,
                             onDelete = onDelete,
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }
@@ -250,8 +252,9 @@ private fun DownloadItem(
     onOpen: () -> Unit,
     onRetry: () -> Unit,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
+    Card(onClick = onOpen, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,

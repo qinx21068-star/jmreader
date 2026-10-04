@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -139,6 +140,7 @@ fun ReadingHistoryTab(
                         entry = entry,
                         onClick = onClick,
                         onRemove = onRemove,
+                        modifier = Modifier.animateItem(),
                     )
                 }
                 // 底部清空按钮 + 条数提示
@@ -199,11 +201,12 @@ private fun HistoryRow(
     entry: HistoryEntry,
     onClick: () -> Unit,
     onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val ctx = LocalContext.current
     val fmt = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(8.dp))
