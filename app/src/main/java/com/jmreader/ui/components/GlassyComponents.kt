@@ -387,6 +387,14 @@ fun GlassyScaffold(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surfaceContainer,
+                        ),
+                    )
+                )
                 .haze(state = hazeState)
         ) {
             content(paddingValues)
