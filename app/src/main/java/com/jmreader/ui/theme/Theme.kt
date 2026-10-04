@@ -55,6 +55,10 @@ val LocalListTitleFontSize = androidx.compose.runtime.compositionLocalOf { 13f }
 val LocalListBodyFontSize = androidx.compose.runtime.compositionLocalOf { 12f }
 /** 封面宽高比（宽/高），如 2:3 → 0.6667f */
 val LocalCoverAspectRatio = androidx.compose.runtime.compositionLocalOf { 0.7f }
+/** 全局 Haze 模糊半径，由外观设置控制。 */
+val LocalGlassBlurRadius = androidx.compose.runtime.compositionLocalOf { 30.dp }
+/** 全局页面动效倍率：0=近似关闭，1=正常，0.5=快速。 */
+val LocalMotionScale = androidx.compose.runtime.compositionLocalOf { 1f }
 
 private val LightColors = lightColorScheme(
     primary = md_primary,
@@ -121,7 +125,7 @@ private val DarkColors = darkColorScheme(
 )
 
 /**
- * v27.4 主题入口：支持 8 套预设配色 + 1 套自定义 + 背景图片（可调不透明度/模糊）。
+ * v29.0 Material 3 主题入口：支持 9 套预设配色 + 1 套自定义 + 动态取色 + 背景图片。
  *
  * v27.5：新增 [cardCornerRadius] 参数，让设置页的"卡片圆角"滑块真正生效——
  * 之前 JMShapes 是全局固定 val，cardCornerRadius 设置项写入 DataStore 但无人读取，
