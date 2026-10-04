@@ -2,6 +2,11 @@
 
 package com.jmreader.ui.screen.reader
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -502,7 +507,11 @@ fun ReaderScreen(
         modifier = volumeKeyModifier,
         snackbarHost = { androidx.compose.material3.SnackbarHost(jumpSnackbar) },
         topBar = {
-            if (uiVisible) {
+            AnimatedVisibility(
+                visible = uiVisible,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { -it / 3 }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { -it / 3 }),
+            ) {
                 // v27.6：线路切换 sheet 状态
                 var showLineSheet by remember { mutableStateOf(false) }
                 TopAppBar(
@@ -538,7 +547,11 @@ fun ReaderScreen(
             }
         },
         bottomBar = {
-            if (uiVisible && totalPages > 0) {
+            AnimatedVisibility(
+                visible = uiVisible && totalPages > 0,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 }),
+            ) {
                 BottomAppBar(
                     modifier = Modifier.navigationBarsPadding(),
                 ) {
