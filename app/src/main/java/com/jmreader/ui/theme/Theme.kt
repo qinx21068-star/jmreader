@@ -143,14 +143,14 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun JMTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
-    dynamicColor: Boolean = false,
-    colorSchemeId: String = "kazumi_blue",
+    dynamicColor: Boolean = true,
+    colorSchemeId: String = "material_you",
     customColors: CustomColors? = null,
     backgroundImageUri: String? = null,
     backgroundImageOpacity: Float = 1.0f,
     backgroundImageBlur: Float = 0f,
     backgroundImageLightOnly: Boolean = true,
-    cardCornerRadius: Float = 14f,
+    cardCornerRadius: Float = 24f,
     cardElevation: Float = 1f,
     listTitleFontSize: Float = 13f,
     listBodyFontSize: Float = 12f,
