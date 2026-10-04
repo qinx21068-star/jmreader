@@ -19,7 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.jmreader.data.local.AnimationSpeed
 import com.jmreader.data.local.AppSettings
+import com.jmreader.data.local.GlassBlurStrength
 import com.jmreader.ui.components.*
 import com.jmreader.ui.theme.PresetScheme
 import com.jmreader.ui.theme.PresetSchemes
@@ -221,9 +223,76 @@ fun AppearanceSettingsGlassy(
                 )
             }
             
+            // ============= 动效与玻璃 =============
             item {
-                Spacer(Modifier.height(8.dp))
+                GlassySectionTitle(
+                    title = "动效与玻璃",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                )
             }
+            item {
+                GlassyCard(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    hazeState = hazeState,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("毛玻璃强度", style = MaterialTheme.typography.titleMedium)
+                        listOf(
+                            GlassBlurStrength.LOW to "弱（更省电）",
+                            GlassBlurStrength.MEDIUM to "中（推荐）",
+                            GlassBlurStrength.HIGH to "强（更明显）",
+                        ).forEach { (strength, label) ->
+                            Row(
+                                Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(label, style = MaterialTheme.typography.bodyLarge)
+                                RadioButton(
+                                    selected = settings.glassBlurStrength == strength,
+                                    onClick = { scope.launch { container.settingsStore.setGlassBlurStrength(strength) } },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                GlassySwitch(
+                    title = "页面背景渐变",
+                    subtitle = "增强层次感和浮层对比度",
+                    checked = settings.glassBackgroundEnabled,
+                    onCheckedChange = { scope.launch { container.settingsStore.setGlassBackgroundEnabled(it) } },
+                    hazeState = hazeState,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+            }
+            item {
+                GlassyCard(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    hazeState = hazeState,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("页面过渡速度", style = MaterialTheme.typography.titleMedium)
+                        listOf(
+                            AnimationSpeed.DISABLED to "关闭",
+                            AnimationSpeed.NORMAL to "正常",
+                            AnimationSpeed.FAST to "快速",
+                        ).forEach { (speed, label) ->
+                            Row(
+                                Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(label, style = MaterialTheme.typography.bodyLarge)
+                                RadioButton(
+                                    selected = settings.animationSpeed == speed,
+                                    onClick = { scope.launch { container.settingsStore.setAnimationSpeed(speed) } },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item { Spacer(Modifier.height(8.dp)) }
         }
     }
 }

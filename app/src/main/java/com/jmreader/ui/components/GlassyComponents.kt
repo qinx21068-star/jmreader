@@ -76,6 +76,7 @@ fun GlassyCard(
 fun GlassyTopAppBar(
     title: String,
     hazeState: HazeState? = null,
+    blurRadius: Dp = 30.dp,
     navigationIcon: ImageVector = Icons.AutoMirrored.Outlined.ArrowBack,
     onNavigationClick: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
@@ -85,7 +86,7 @@ fun GlassyTopAppBar(
         modifier.hazeChild(
             state = hazeState,
             style = HazeStyle(
-                blurRadius = 30.dp,  // 增强模糊 20dp → 30dp
+                blurRadius = blurRadius,
                 tint = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),  // 降低不透明度，使用 surfaceContainer
             )
         )

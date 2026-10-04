@@ -265,6 +265,10 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         val TAB_BAR_STYLE = stringPreferencesKey("tab_bar_style_v27_5")
         val DETAIL_PARALLAX = booleanPreferencesKey("detail_parallax_v27_5")
         val SPLASH_ANIM = booleanPreferencesKey("splash_anim_v27_5")
+        // v29.0 Material 3 glass/animation controls
+        val GLASS_BLUR_STRENGTH = stringPreferencesKey("glass_blur_strength_v29")
+        val GLASS_BACKGROUND_ENABLED = booleanPreferencesKey("glass_background_enabled_v29")
+        val ANIMATION_SPEED = stringPreferencesKey("animation_speed_v29")
         // v27.5 隐私
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_v27_5")
         val APP_LOCK_PIN = stringPreferencesKey("app_lock_pin_v27_5")
@@ -418,6 +422,9 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         tabBarStyle = runCatching { TabBarStyle.valueOf(p[Keys.TAB_BAR_STYLE] ?: "DEFAULT") }.getOrDefault(TabBarStyle.DEFAULT),
         detailParallax = p[Keys.DETAIL_PARALLAX] ?: true,
         splashAnim = p[Keys.SPLASH_ANIM] ?: true,
+        glassBlurStrength = runCatching { GlassBlurStrength.valueOf(p[Keys.GLASS_BLUR_STRENGTH] ?: "MEDIUM") }.getOrDefault(GlassBlurStrength.MEDIUM),
+        glassBackgroundEnabled = p[Keys.GLASS_BACKGROUND_ENABLED] ?: true,
+        animationSpeed = runCatching { AnimationSpeed.valueOf(p[Keys.ANIMATION_SPEED] ?: "NORMAL") }.getOrDefault(AnimationSpeed.NORMAL),
         // v27.5 隐私
         appLockEnabled = p[Keys.APP_LOCK_ENABLED] ?: false,
         appLockPin = p[Keys.APP_LOCK_PIN],
@@ -506,6 +513,9 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
     suspend fun setTabBarStyle(s: TabBarStyle) = context.dataStore.edit { it[Keys.TAB_BAR_STYLE] = s.name }
     suspend fun setDetailParallax(v: Boolean) = context.dataStore.edit { it[Keys.DETAIL_PARALLAX] = v }
     suspend fun setSplashAnim(v: Boolean) = context.dataStore.edit { it[Keys.SPLASH_ANIM] = v }
+    suspend fun setGlassBlurStrength(v: GlassBlurStrength) = context.dataStore.edit { it[Keys.GLASS_BLUR_STRENGTH] = v.name }
+    suspend fun setGlassBackgroundEnabled(v: Boolean) = context.dataStore.edit { it[Keys.GLASS_BACKGROUND_ENABLED] = v }
+    suspend fun setAnimationSpeed(v: AnimationSpeed) = context.dataStore.edit { it[Keys.ANIMATION_SPEED] = v.name }
     // 隐私
     suspend fun setAppLockEnabled(v: Boolean) = context.dataStore.edit { it[Keys.APP_LOCK_ENABLED] = v }
     suspend fun setAppLockPin(pin: String?) = context.dataStore.edit {
