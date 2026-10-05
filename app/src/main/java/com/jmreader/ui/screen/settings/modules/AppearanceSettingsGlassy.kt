@@ -11,13 +11,12 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFlexibleTopAppBar
+import com.jmreader.ui.components.GlassyTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,26 +46,21 @@ fun AppearanceSettingsGlassy(
 ) {
     val settings by container.settingsStore.settings.collectAsState(initial = container.settingsStore.cachedSnapshot)
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text("外观设置") },
-                navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                scrollBehavior = scrollBehavior,
+            GlassyTopAppBar(
+                title = "外观设置",
+                navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+                onNavigationClick = onBack,
             )
         },
     ) { padding ->
         RikkaGradientBackground(modifier = modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = padding + PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 item {

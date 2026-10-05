@@ -17,11 +17,12 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFlexibleTopAppBar
+import com.jmreader.ui.components.GlassyTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import com.jmreader.ui.nav.Routes
+import com.jmreader.ui.screen.settings.modules.AppearanceSettingsGlassy
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,21 +43,20 @@ fun SettingsMainGlassy(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text("设置") },
-                navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回") } },
-                scrollBehavior = scrollBehavior,
+            GlassyTopAppBar(
+                title = "设置",
+                navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack,
+                onNavigationClick = onBack,
             )
         },
     ) { padding ->
         RikkaGradientBackground(modifier = modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = padding + PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 item {
