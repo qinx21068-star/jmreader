@@ -56,7 +56,7 @@ fun AnimatedClickableCard(
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val animationSpeed = LocalAppSettings.current?.animationSpeed ?: AnimationSpeed.NORMAL
-    val scaleSpec = when (animationSpeed) {
+    val scaleSpec: AnimationSpec<Float> = when (animationSpeed) {
         AnimationSpeed.DISABLED -> snap()
         AnimationSpeed.FAST -> spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -233,7 +233,7 @@ fun SlideInContent(
 ) {
     val speed = LocalAppSettings.current?.animationSpeed ?: AnimationSpeed.NORMAL
     val duration = animationDuration(300)
-    val offsetSpec = when (speed) {
+    val offsetSpec: AnimationSpec<Dp> = when (speed) {
         AnimationSpeed.DISABLED -> snap()
         AnimationSpeed.FAST -> spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
