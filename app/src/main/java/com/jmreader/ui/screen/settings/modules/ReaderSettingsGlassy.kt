@@ -45,17 +45,35 @@ fun ReaderSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier: 
                 }
                 item {
                     RikkaSettingsGroup("交互") {
-                        RikkaSettingsItem("音量键翻页", "仅左右翻页模式生效", trailingContent = { Switch(checked = settings.volumeKeyPaging, onCheckedChange = { scope.launch { container.settingsStore.setVolumeKeyPaging(it) } }) }),
-                        RikkaSettingsItem("双指缩放", "查看图片细节", trailingContent = { Switch(checked = settings.pinchZoom, onCheckedChange = { scope.launch { container.settingsStore.setPinchZoom(it) } }) }),
-                        RikkaSettingsItem("记住阅读进度", "记录每章页码", trailingContent = { Switch(checked = settings.rememberPageLevel, onCheckedChange = { scope.launch { container.settingsStore.setRememberPageLevel(it) } }) }),
-                        RikkaSettingsItem("预加载下一章", "减少章节切换等待", trailingContent = { Switch(checked = settings.preloadNextChapter, onCheckedChange = { scope.launch { container.settingsStore.setPreloadNextChapter(it) } }) }),
+                        RikkaSettingsItem(
+                            "音量键翻页", "仅左右翻页模式生效",
+                            trailingContent = { Switch(checked = settings.volumeKeyPaging, onCheckedChange = { value -> scope.launch { container.settingsStore.setVolumeKeyPaging(value) } }) },
+                        ),
+                        RikkaSettingsItem(
+                            "双指缩放", "查看图片细节",
+                            trailingContent = { Switch(checked = settings.pinchZoom, onCheckedChange = { value -> scope.launch { container.settingsStore.setPinchZoom(value) } }) },
+                        ),
+                        RikkaSettingsItem(
+                            "记住阅读进度", "记录每章页码",
+                            trailingContent = { Switch(checked = settings.rememberPageLevel, onCheckedChange = { value -> scope.launch { container.settingsStore.setRememberPageLevel(value) } }) },
+                        ),
+                        RikkaSettingsItem(
+                            "预加载下一章", "减少章节切换等待",
+                            trailingContent = { Switch(checked = settings.preloadNextChapter, onCheckedChange = { value -> scope.launch { container.settingsStore.setPreloadNextChapter(value) } }) },
+                        ),
                     }
                 }
                 item {
                     RikkaSettingsGroup("自动滚动与夜间模式") {
-                        RikkaSettingsItem("自动滚动", "上下滚动模式生效", trailingContent = { Switch(checked = settings.autoScroll, onCheckedChange = { scope.launch { container.settingsStore.setAutoScroll(it) } }) }),
+                        RikkaSettingsItem(
+                            "自动滚动", "上下滚动模式生效",
+                            trailingContent = { Switch(checked = settings.autoScroll, onCheckedChange = { value -> scope.launch { container.settingsStore.setAutoScroll(value) } }) },
+                        ),
                         if (settings.autoScroll) RikkaSliderItem("滚动速度", settings.autoScrollSpeed, 1f..30f, "${settings.autoScrollSpeed.toInt()} 页/分钟") { scope.launch { container.settingsStore.setAutoScrollSpeed(it) } }
-                        RikkaSettingsItem("暖色滤镜", "减少蓝光", trailingContent = { Switch(checked = settings.nightModeFilter, onCheckedChange = { scope.launch { container.settingsStore.setNightModeFilter(it) } }) }),
+                        RikkaSettingsItem(
+                            "暖色滤镜", "减少蓝光",
+                            trailingContent = { Switch(checked = settings.nightModeFilter, onCheckedChange = { value -> scope.launch { container.settingsStore.setNightModeFilter(value) } }) },
+                        ),
                         if (settings.nightModeFilter) RikkaSliderItem("滤镜强度", settings.nightModeFilterStrength, 0f..1f, "${(settings.nightModeFilterStrength * 100).toInt()}%") { scope.launch { container.settingsStore.setNightModeFilterStrength(it) } }
                     }
                 }

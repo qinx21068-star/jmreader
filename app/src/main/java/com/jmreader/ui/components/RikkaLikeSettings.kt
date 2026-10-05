@@ -96,7 +96,17 @@ fun RikkaSliderItem(title: String, value: Float, valueRange: ClosedFloatingPoint
 fun RikkaChoiceItem(title: String, subtitle: String, options: List<Pair<String, Boolean>>, onSelect: (String) -> Unit) {
     ListItem(
         headlineContent = { Text(title) },
-        supportingContent = { Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { options.forEach { (label, selected) -> FilterChip(selected = selected, onClick = { onSelect(label) }, label = { Text(label) }) } } },
+        supportingContent = {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                options.forEach { option ->
+                    FilterChip(
+                        selected = option.second,
+                        onClick = { onSelect(option.first) },
+                        label = { Text(option.first) },
+                    )
+                }
+            }
+        },
         trailingContent = { Text(subtitle) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
@@ -117,7 +127,13 @@ fun RikkaThemeGrid(schemes: List<PresetScheme>, selectedId: String, onSelect: (S
                     }
                     if (scheme.id == selectedId) Icon(Icons.Outlined.Check, null, tint = Color.White)
                 }
-                Text(scheme.name, MaterialTheme.typography.labelMedium, color = scheme.swatches[0], textAlign = TextAlign.Center, maxLines = 1)
+                Text(
+                    text = scheme.name,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.swatches[0],
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
             }
         }
     }
