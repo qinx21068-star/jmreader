@@ -45,7 +45,7 @@ fun PrivacySettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier:
                         RikkaSettingsItem(
                             "启用应用锁", "从后台返回时验证指纹或密码",
                             trailingContent = { Switch(checked = settings.appLockEnabled, onCheckedChange = { value -> scope.launch { container.settingsStore.setAppLockEnabled(value) } }) },
-                        ),
+                        )
                         if (settings.appLockEnabled) RikkaSettingsItem("设置 PIN 码", if (settings.appLockPin == null) "使用生物识别" else "已设置 PIN (${settings.appLockPin!!.length} 位)", onClick = { showPinDialog = true })
                     }
                 }
@@ -54,11 +54,11 @@ fun PrivacySettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier:
                         RikkaSettingsItem(
                             "隐身模式", "不记录浏览历史、阅读进度和搜索历史",
                             trailingContent = { Switch(checked = settings.incognito, onCheckedChange = { value -> scope.launch { container.settingsStore.setIncognito(value) } }) },
-                        ),
+                        )
                         RikkaSettingsItem(
                             "记录搜索历史", "保存搜索关键词",
                             trailingContent = { Switch(checked = settings.saveSearchHistory, enabled = !settings.incognito, onCheckedChange = { value -> scope.launch { container.settingsStore.setSaveSearchHistory(value) } }) },
-                        ),
+                        )
                     }
                 }
                 item {
@@ -66,7 +66,7 @@ fun PrivacySettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier:
                         RikkaSettingsItem(
                             "屏蔽截图", "防止截图和录屏",
                             trailingContent = { Switch(checked = settings.blockScreenshots, onCheckedChange = { value -> scope.launch { container.settingsStore.setBlockScreenshots(value) } }) },
-                        ),
+                        )
                     }
                 }
             }
