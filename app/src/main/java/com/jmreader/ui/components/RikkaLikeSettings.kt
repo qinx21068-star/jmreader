@@ -92,6 +92,7 @@ fun RikkaSliderItem(title: String, value: Float, valueRange: ClosedFloatingPoint
     )
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun RikkaChoiceItem(title: String, subtitle: String, options: List<Pair<String, Boolean>>, onSelect: (String) -> Unit) {
     ListItem(
