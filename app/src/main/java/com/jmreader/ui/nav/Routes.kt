@@ -27,6 +27,7 @@ object Routes {
     
     // v29.0 毛玻璃设置模块
     const val SETTINGS_APPEARANCE = "settings/appearance"
+    const val SETTINGS_THEME = "settings/theme"
     const val SETTINGS_READER = "settings/reader"
     const val SETTINGS_LIST = "settings/list"
     const val SETTINGS_NETWORK = "settings/network"

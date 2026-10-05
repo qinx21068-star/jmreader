@@ -1,170 +1,69 @@
 package com.jmreader.ui.screen.settings.modules
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pin
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
-import com.jmreader.ui.components.*
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import com.jmreader.ui.components.GlassyTopAppBar
+import com.jmreader.ui.components.RikkaGradientBackground
+import com.jmreader.ui.components.RikkaSettingsGroup
+import com.jmreader.ui.components.RikkaSettingsItem
 import kotlinx.coroutines.launch
 
-/**
- * 隐私设置模块 - Material 3 设计风格
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivacySettingsGlassy(
-    container: AppContainer,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val settings by container.settingsStore.settings.collectAsState()
+fun PrivacySettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val settings by container.settingsStore.settings.collectAsState(initial = container.settingsStore.cachedSnapshot)
     val scope = rememberCoroutineScope()
-    val hazeState = remember { HazeState() }
     var showPinDialog by remember { mutableStateOf(false) }
-    
-    Scaffold(
-        topBar = {
-            GlassyTopAppBar(
-                title = "隐私设置",
-                hazeState = hazeState,
-                onNavigationClick = onBack
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .haze(state = hazeState)
-                .padding(padding),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // ============= 应用锁 =============
-            item {
-                GlassySectionTitle(
-                    title = "应用锁",
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                GlassySwitch(
-                    title = "启用应用锁",
-                    subtitle = "从后台返回时需要验证指纹/密码",
-                    checked = settings.appLockEnabled,
-                    onCheckedChange = {
-                        scope.launch {
-                            container.settingsStore.setAppLockEnabled(it)
-                        }
-                    },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            if (settings.appLockEnabled) {
+    Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = { GlassyTopAppBar("隐私设置", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) }) { padding ->
+        RikkaGradientBackground(modifier.fillMaxSize()) {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
-                    GlassySettingsCard(
-                        icon = Icons.Outlined.Pin,
-                        title = "设置 PIN 码",
-                        subtitle = if (settings.appLockPin == null) {
-                            "使用生物识别"
-                        } else {
-                            "已设置 PIN (${settings.appLockPin!!.length} 位)"
-                        },
-                        onClick = { showPinDialog = true },
-                        hazeState = hazeState,
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
+                    RikkaSettingsGroup("应用锁") {
+                        RikkaSettingsItem("启用应用锁", "从后台返回时验证指纹或密码", trailingContent = { Switch(settings.appLockEnabled) { scope.launch { container.settingsStore.setAppLockEnabled(it) } } })
+                        if (settings.appLockEnabled) RikkaSettingsItem("设置 PIN 码", if (settings.appLockPin == null) "使用生物识别" else "已设置 PIN (${settings.appLockPin!!.length} 位)", onClick = { showPinDialog = true })
+                    }
                 }
-            }
-            
-            // ============= 浏览记录 =============
-            item {
-                GlassySectionTitle(
-                    title = "浏览记录",
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-            
-            item {
-                GlassySwitch(
-                    title = "隐身模式",
-                    subtitle = "不记录浏览历史、阅读进度、搜索历史",
-                    checked = settings.incognito,
-                    onCheckedChange = {
-                        scope.launch {
-                            container.settingsStore.setIncognito(it)
-                        }
-                    },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                GlassySwitch(
-                    title = "记录搜索历史",
-                    subtitle = "保存搜索关键词以便快速输入",
-                    checked = settings.saveSearchHistory,
-                    enabled = !settings.incognito,
-                    onCheckedChange = {
-                        scope.launch {
-                            container.settingsStore.setSaveSearchHistory(it)
-                        }
-                    },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            // ============= 屏幕安全 =============
-            item {
-                GlassySectionTitle(
-                    title = "屏幕安全",
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-            
-            item {
-                GlassySwitch(
-                    title = "屏蔽截图",
-                    subtitle = "防止截图和录屏（FLAG_SECURE）",
-                    checked = settings.blockScreenshots,
-                    onCheckedChange = {
-                        scope.launch {
-                            container.settingsStore.setBlockScreenshots(it)
-                        }
-                    },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                Spacer(Modifier.height(8.dp))
+                item {
+                    RikkaSettingsGroup("浏览记录") {
+                        RikkaSettingsItem("隐身模式", "不记录浏览历史、阅读进度和搜索历史", trailingContent = { Switch(settings.incognito) { scope.launch { container.settingsStore.setIncognito(it) } } })
+                        RikkaSettingsItem("记录搜索历史", "保存搜索关键词", trailingContent = { Switch(settings.saveSearchHistory, enabled = !settings.incognito) { scope.launch { container.settingsStore.setSaveSearchHistory(it) } } })
+                    }
+                }
+                item {
+                    RikkaSettingsGroup("屏幕安全") {
+                        RikkaSettingsItem("屏蔽截图", "防止截图和录屏", trailingContent = { Switch(settings.blockScreenshots) { scope.launch { container.settingsStore.setBlockScreenshots(it) } } })
+                    }
+                }
             }
         }
     }
-    
-    // PIN 码设置对话框（这里简化处理）
-    if (showPinDialog) {
-        AlertDialog(
-            onDismissRequest = { showPinDialog = false },
-            title = { Text("设置 PIN 码") },
-            text = { Text("PIN 码设置功能待实现") },
-            confirmButton = {
-                TextButton(onClick = { showPinDialog = false }) {
-                    Text("确定")
-                }
-            }
-        )
-    }
+    if (showPinDialog) AlertDialog(
+        onDismissRequest = { showPinDialog = false },
+        title = { Text("设置 PIN 码") },
+        text = { Text("PIN 码设置功能待实现") },
+        confirmButton = { TextButton(onClick = { showPinDialog = false }) { Text("确定") } },
+    )
 }

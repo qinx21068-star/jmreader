@@ -1,198 +1,53 @@
 package com.jmreader.ui.screen.settings.modules
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jmreader.data.AppContainer
 import com.jmreader.data.local.ListStyle
-import com.jmreader.ui.components.*
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import com.jmreader.ui.components.GlassyTopAppBar
+import com.jmreader.ui.components.RikkaChoiceItem
+import com.jmreader.ui.components.RikkaGradientBackground
+import com.jmreader.ui.components.RikkaSettingsGroup
+import com.jmreader.ui.components.RikkaSliderItem
 import kotlinx.coroutines.launch
 
-/**
- * 列表设置模块 - Material 3 设计风格
- * 
- * 包含：
- * - 列表样式（网格/列表/紧凑）
- * - 封面裁切模式
- * - 封面宽高比
- * - 标题字号
- * - 正文字号
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListSettingsGlassy(
-    container: AppContainer,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val settings by container.settingsStore.settings.collectAsState()
+fun ListSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val settings by container.settingsStore.settings.collectAsState(initial = container.settingsStore.cachedSnapshot)
     val scope = rememberCoroutineScope()
-    val hazeState = remember { HazeState() }
-    
-    Scaffold(
-        topBar = {
-            GlassyTopAppBar(
-                title = "列表设置",
-                hazeState = hazeState,
-                onNavigationClick = onBack
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .haze(state = hazeState)
-                .padding(padding),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // ============= 列表样式 =============
-            item {
-                GlassySectionTitle(
-                    title = "列表样式",
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                GlassyCard(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    hazeState = hazeState
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf(
-                            ListStyle.GRID to "双列网格",
-                            ListStyle.LIST to "单列列表",
-                            ListStyle.COMPACT_GRID to "三列紧凑",
-                            ListStyle.CARD to "卡片样式",
-                            ListStyle.MAGAZINE to "杂志风格"
-                        ).forEach { (style, label) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                RadioButton(
-                                    selected = settings.listStyle == style,
-                                    onClick = {
-                                        scope.launch {
-                                            container.settingsStore.setListStyle(style)
-                                        }
-                                    }
-                                )
-                            }
-                        }
+    Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = { GlassyTopAppBar("列表设置", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) }) { padding ->
+        RikkaGradientBackground(modifier.fillMaxSize()) {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                item {
+                    RikkaSettingsGroup("列表样式") {
+                        RikkaChoiceItem("列表样式", settings.listStyle.name, listOf(
+                            "列表" to (settings.listStyle == ListStyle.LIST), "网格" to (settings.listStyle == ListStyle.GRID), "紧凑" to (settings.listStyle == ListStyle.COMPACT_GRID), "卡片" to (settings.listStyle == ListStyle.CARD), "杂志" to (settings.listStyle == ListStyle.MAGAZINE),
+                        )) { label -> scope.launch { container.settingsStore.setListStyle(when (label) { "网格" -> ListStyle.GRID; "紧凑" -> ListStyle.COMPACT_GRID; "卡片" -> ListStyle.CARD; "杂志" -> ListStyle.MAGAZINE; else -> ListStyle.LIST }) } }
                     }
                 }
-            }
-            
-            // ============= 封面设置 =============
-            item {
-                GlassySectionTitle(
-                    title = "封面设置",
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-            
-            item {
-                GlassyCard(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    hazeState = hazeState
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "封面宽高比",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        
-                        listOf(
-                            "3:4" to "标准漫画 (3:4)",
-                            "2:3" to "经典竖版 (2:3)",
-                            "1:1" to "正方形 (1:1)",
-                            "16:9" to "横版宽屏 (16:9)"
-                        ).forEach { (ratio, label) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                RadioButton(
-                                    selected = settings.coverAspectRatio == ratio,
-                                    onClick = {
-                                        scope.launch {
-                                            container.settingsStore.setCoverAspectRatio(ratio)
-                                        }
-                                    }
-                                )
-                            }
-                        }
+                item {
+                    RikkaSettingsGroup("封面与字体") {
+                        RikkaChoiceItem("封面比例", settings.coverAspectRatio, listOf("3:4" to (settings.coverAspectRatio == "3:4"), "2:3" to (settings.coverAspectRatio == "2:3"), "1:1" to (settings.coverAspectRatio == "1:1"), "16:9" to (settings.coverAspectRatio == "16:9"))) { scope.launch { container.settingsStore.setCoverAspectRatio(it) } }
+                        RikkaSliderItem("标题字号", settings.listTitleFontSize, 10f..18f, "${settings.listTitleFontSize.toInt()} sp") { scope.launch { container.settingsStore.setListTitleFontSize(it) } }
+                        RikkaSliderItem("正文字号", settings.listBodyFontSize, 10f..16f, "${settings.listBodyFontSize.toInt()} sp") { scope.launch { container.settingsStore.setListBodyFontSize(it) } }
                     }
                 }
-            }
-            
-            // ============= 字体大小 =============
-            item {
-                GlassySectionTitle(
-                    title = "字体大小",
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-            
-            item {
-                GlassySlider(
-                    title = "标题字号",
-                    value = settings.listTitleFontSize,
-                    onValueChange = {
-                        scope.launch {
-                            container.settingsStore.setListTitleFontSize(it)
-                        }
-                    },
-                    valueRange = 10f..18f,
-                    steps = 7,
-                    valueLabel = { "${it.toInt()} sp" },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                GlassySlider(
-                    title = "正文字号",
-                    value = settings.listBodyFontSize,
-                    onValueChange = {
-                        scope.launch {
-                            container.settingsStore.setListBodyFontSize(it)
-                        }
-                    },
-                    valueRange = 10f..16f,
-                    steps = 5,
-                    valueLabel = { "${it.toInt()} sp" },
-                    hazeState = hazeState,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-            
-            item {
-                Spacer(Modifier.height(8.dp))
             }
         }
     }

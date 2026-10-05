@@ -52,6 +52,7 @@ import com.jmreader.ui.screen.search.SearchScreen
 import com.jmreader.ui.screen.settings.SettingsScreen
 import com.jmreader.ui.screen.settings.SettingsMainGlassy
 import com.jmreader.ui.screen.settings.modules.AppearanceSettingsGlassy
+import com.jmreader.ui.screen.settings.modules.ThemeSettingsGlassy
 import com.jmreader.ui.screen.settings.modules.ReaderSettingsGlassy
 import com.jmreader.ui.screen.settings.modules.ListSettingsGlassy
 import com.jmreader.ui.screen.settings.modules.NetworkSettingsGlassy
@@ -169,7 +170,7 @@ fun JMApp(container: AppContainer) {
                 // 根据目标路由选择不同的动画
                 when (targetState.destination.route) {
                     Routes.DETAIL, Routes.READER, 
-                    Routes.SETTINGS_APPEARANCE, Routes.SETTINGS_READER,
+                    Routes.SETTINGS_APPEARANCE, Routes.SETTINGS_THEME, Routes.SETTINGS_READER,
                     Routes.SETTINGS_LIST, Routes.SETTINGS_NETWORK,
                     Routes.SETTINGS_PRIVACY, Routes.SETTINGS_DOWNLOAD,
                     Routes.SETTINGS_ABOUT, Routes.COMMENTS, Routes.AUTHOR -> {
@@ -295,7 +296,7 @@ fun JMApp(container: AppContainer) {
             }
             composable(Routes.SETTINGS) {
                 SettingsMainGlassy(
-                    onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
+                    onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_THEME) },
                     onNavigateToReader = { navController.navigate(Routes.SETTINGS_READER) },
                     onNavigateToList = { navController.navigate(Routes.SETTINGS_LIST) },
                     onNavigateToNetwork = { navController.navigate(Routes.SETTINGS_NETWORK) },
@@ -313,6 +314,12 @@ fun JMApp(container: AppContainer) {
                 )
             }
             // v29.0 毛玻璃设置模块
+            composable(Routes.SETTINGS_THEME) {
+                ThemeSettingsGlassy(
+                    container = container,
+                    onBack = { navController.popBackStack() },
+                )
+            }
             composable(Routes.SETTINGS_APPEARANCE) {
                 com.jmreader.ui.screen.settings.modules.AppearanceSettingsGlassy(
                     container = container,
