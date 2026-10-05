@@ -33,19 +33,41 @@ fun ListSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier: Mo
     val scope = rememberCoroutineScope()
     Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = { GlassyTopAppBar("列表设置", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) }) { padding ->
         RikkaGradientBackground(modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
                     RikkaSettingsGroup("列表样式") {
-                        RikkaChoiceItem("列表样式", settings.listStyle.name, listOf(
-                            "列表" to (settings.listStyle == ListStyle.LIST), "网格" to (settings.listStyle == ListStyle.GRID), "紧凑" to (settings.listStyle == ListStyle.COMPACT_GRID), "卡片" to (settings.listStyle == ListStyle.CARD), "杂志" to (settings.listStyle == ListStyle.MAGAZINE),
-                        )) { label -> scope.launch { container.settingsStore.setListStyle(when (label) { "网格" -> ListStyle.GRID; "紧凑" -> ListStyle.COMPACT_GRID; "卡片" -> ListStyle.CARD; "杂志" -> ListStyle.MAGAZINE; else -> ListStyle.LIST }) } }
+                        RikkaChoiceItem("布局模式", settings.listStyle.name, listOf(
+                            "列表" to (settings.listStyle == ListStyle.LIST), 
+                            "网格" to (settings.listStyle == ListStyle.GRID), 
+                            "紧凑" to (settings.listStyle == ListStyle.COMPACT_GRID), 
+                            "卡片" to (settings.listStyle == ListStyle.CARD), 
+                            "杂志" to (settings.listStyle == ListStyle.MAGAZINE),
+                        )) { label -> scope.launch { container.settingsStore.setListStyle(when (label) { 
+                            "网格" -> ListStyle.GRID
+                            "紧凑" -> ListStyle.COMPACT_GRID
+                            "卡片" -> ListStyle.CARD
+                            "杂志" -> ListStyle.MAGAZINE
+                            else -> ListStyle.LIST 
+                        }) } }
                     }
                 }
                 item {
                     RikkaSettingsGroup("封面与字体") {
-                        RikkaChoiceItem("封面比例", settings.coverAspectRatio, listOf("3:4" to (settings.coverAspectRatio == "3:4"), "2:3" to (settings.coverAspectRatio == "2:3"), "1:1" to (settings.coverAspectRatio == "1:1"), "16:9" to (settings.coverAspectRatio == "16:9"))) { scope.launch { container.settingsStore.setCoverAspectRatio(it) } }
+                        RikkaChoiceItem("封面比例", settings.coverAspectRatio, listOf(
+                            "3:4" to (settings.coverAspectRatio == "3:4"), 
+                            "2:3" to (settings.coverAspectRatio == "2:3"), 
+                            "1:1" to (settings.coverAspectRatio == "1:1"), 
+                            "16:9" to (settings.coverAspectRatio == "16:9")
+                        )) { scope.launch { container.settingsStore.setCoverAspectRatio(it) } }
                         RikkaSliderItem("标题字号", settings.listTitleFontSize, 10f..18f, "${settings.listTitleFontSize.toInt()} sp") { scope.launch { container.settingsStore.setListTitleFontSize(it) } }
                         RikkaSliderItem("正文字号", settings.listBodyFontSize, 10f..16f, "${settings.listBodyFontSize.toInt()} sp") { scope.launch { container.settingsStore.setListBodyFontSize(it) } }
+                    }
+                }
+                item {
+                    RikkaSettingsGroup("间距与圆角") {
+                        RikkaSliderItem("项目间距", settings.listItemSpacing, 4f..24f, "${settings.listItemSpacing.toInt()} dp") { scope.launch { container.settingsStore.setListItemSpacing(it) } }
+                        RikkaSliderItem("封面圆角", settings.listCoverRadius, 0f..24f, "${settings.listCoverRadius.toInt()} dp") { scope.launch { container.settingsStore.setListCoverRadius(it) } }
+                        RikkaSliderItem("卡片圆角", settings.listCardRadius, 0f..24f, "${settings.listCardRadius.toInt()} dp") { scope.launch { container.settingsStore.setListCardRadius(it) } }
                     }
                 }
             }

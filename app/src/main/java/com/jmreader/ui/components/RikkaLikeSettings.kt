@@ -97,7 +97,7 @@ fun RikkaChoiceItem(title: String, subtitle: String, options: List<Pair<String, 
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 options.forEach { option ->
                     FilterChip(
                         selected = option.second,

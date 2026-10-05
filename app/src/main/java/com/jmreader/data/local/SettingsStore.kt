@@ -156,6 +156,12 @@ data class AppSettings(
     val listTitleFontSize: Float = 13f,
     /** 列表正文/副标题字体大小 sp（10..16，默认 12）。 */
     val listBodyFontSize: Float = 12f,
+    /** 列表项目间距 dp（4..24，默认 12）。 */
+    val listItemSpacing: Float = 12f,
+    /** 列表封面圆角 dp（0..24，默认 8）。 */
+    val listCoverRadius: Float = 8f,
+    /** 列表卡片圆角 dp（0..24，默认 12）。 */
+    val listCardRadius: Float = 12f,
     /** 杂志风/网格封面的宽高比（"2:3" / "3:4" / "1:1" / "4:5"）。 */
     val coverAspectRatio: String = "2:3",
     /** 顶部 Tab 栏样式。 */
@@ -261,6 +267,9 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         val CORNER_MODE = stringPreferencesKey("corner_mode_v27_5")
         val LIST_TITLE_FONT_SIZE = floatPreferencesKey("list_title_font_v27_5")
         val LIST_BODY_FONT_SIZE = floatPreferencesKey("list_body_font_v27_5")
+        val LIST_ITEM_SPACING = floatPreferencesKey("list_item_spacing_v27_5")
+        val LIST_COVER_RADIUS = floatPreferencesKey("list_cover_radius_v27_5")
+        val LIST_CARD_RADIUS = floatPreferencesKey("list_card_radius_v27_5")
         val COVER_ASPECT_RATIO = stringPreferencesKey("cover_aspect_v27_5")
         val TAB_BAR_STYLE = stringPreferencesKey("tab_bar_style_v27_5")
         val DETAIL_PARALLAX = booleanPreferencesKey("detail_parallax_v27_5")
@@ -418,6 +427,9 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
         cornerMode = runCatching { CornerMode.valueOf(p[Keys.CORNER_MODE] ?: "UNIFIED") }.getOrDefault(CornerMode.UNIFIED),
         listTitleFontSize = p[Keys.LIST_TITLE_FONT_SIZE] ?: 13f,
         listBodyFontSize = p[Keys.LIST_BODY_FONT_SIZE] ?: 12f,
+        listItemSpacing = p[Keys.LIST_ITEM_SPACING] ?: 12f,
+        listCoverRadius = p[Keys.LIST_COVER_RADIUS] ?: 8f,
+        listCardRadius = p[Keys.LIST_CARD_RADIUS] ?: 12f,
         coverAspectRatio = p[Keys.COVER_ASPECT_RATIO] ?: "2:3",
         tabBarStyle = runCatching { TabBarStyle.valueOf(p[Keys.TAB_BAR_STYLE] ?: "DEFAULT") }.getOrDefault(TabBarStyle.DEFAULT),
         detailParallax = p[Keys.DETAIL_PARALLAX] ?: true,
@@ -509,6 +521,9 @@ class SettingsStore(private val context: Context, scope: CoroutineScope) {
     suspend fun setCornerMode(m: CornerMode) = context.dataStore.edit { it[Keys.CORNER_MODE] = m.name }
     suspend fun setListTitleFontSize(v: Float) = context.dataStore.edit { it[Keys.LIST_TITLE_FONT_SIZE] = v.coerceIn(10f, 18f) }
     suspend fun setListBodyFontSize(v: Float) = context.dataStore.edit { it[Keys.LIST_BODY_FONT_SIZE] = v.coerceIn(10f, 16f) }
+    suspend fun setListItemSpacing(v: Float) = context.dataStore.edit { it[Keys.LIST_ITEM_SPACING] = v.coerceIn(4f, 24f) }
+    suspend fun setListCoverRadius(v: Float) = context.dataStore.edit { it[Keys.LIST_COVER_RADIUS] = v.coerceIn(0f, 24f) }
+    suspend fun setListCardRadius(v: Float) = context.dataStore.edit { it[Keys.LIST_CARD_RADIUS] = v.coerceIn(0f, 24f) }
     suspend fun setCoverAspectRatio(s: String) = context.dataStore.edit { it[Keys.COVER_ASPECT_RATIO] = s }
     suspend fun setTabBarStyle(s: TabBarStyle) = context.dataStore.edit { it[Keys.TAB_BAR_STYLE] = s.name }
     suspend fun setDetailParallax(v: Boolean) = context.dataStore.edit { it[Keys.DETAIL_PARALLAX] = v }

@@ -48,9 +48,9 @@ fun ThemeSettingsGlassy(
             )
         },
     ) { padding ->
-        RikkaGradientBackground(modifier = Modifier.fillMaxSize()) {
+        RikkaGradientBackground(modifier = Modifier.fillMaxSize().padding(padding)) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
