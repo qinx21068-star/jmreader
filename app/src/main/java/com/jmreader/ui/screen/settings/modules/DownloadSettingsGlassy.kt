@@ -45,7 +45,7 @@ fun DownloadSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier
                 }
                 item {
                     RikkaSettingsGroup("下载管理") {
-                        RikkaSettingsItem("本地搜索", "在已下载内容中搜索", trailingContent = { Switch(checked = settings.localSearchEnabled, onCheckedChange = { scope.launch { container.settingsStore.setLocalSearchEnabled(it) } } })
+                        RikkaSettingsItem("本地搜索", "在已下载内容中搜索", trailingContent = { Switch(checked = settings.localSearchEnabled, onCheckedChange = { scope.launch { container.settingsStore.setLocalSearchEnabled(it) } }) }),
                     }
                 }
             }

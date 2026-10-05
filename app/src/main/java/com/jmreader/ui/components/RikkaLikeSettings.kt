@@ -50,8 +50,20 @@ fun RikkaGradientBackground(modifier: Modifier = Modifier, content: @Composable 
 @Composable
 fun RikkaSettingsGroup(title: String? = null, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        title?.let { Text(it, MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
-        Card(shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = LocalCardElevation.current), content = content)
+        title?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
+        Card(
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = LocalCardElevation.current),
+            content = content,
+        )
     }
 }
 
@@ -98,10 +110,10 @@ fun RikkaThemeGrid(schemes: List<PresetScheme>, selectedId: String, onSelect: (S
             Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).clickable { onSelect(scheme.id) }.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Box(contentAlignment = Alignment.Center) {
                     Canvas(Modifier.size(52.dp).clip(CircleShape)) {
-                        drawRect(scheme.swatches[0], size)
-                        drawRect(scheme.swatches[1], size, Offset(size.width / 2f, 0f))
-                        drawRect(scheme.swatches[2], size, Offset(size.width / 2f, size.height / 2f))
-                        drawCircle(scheme.swatches[0], if (scheme.id == selectedId) 12.dp.toPx() else 8.dp.toPx(), Offset(size.width / 2f, size.height / 2f))
+                        drawRect(color = scheme.swatches[0], size = size)
+                        drawRect(color = scheme.swatches[1], size = size, topLeft = Offset(size.width / 2f, 0f))
+                        drawRect(color = scheme.swatches[2], size = size, topLeft = Offset(size.width / 2f, size.height / 2f))
+                        drawCircle(color = scheme.swatches[0], radius = if (scheme.id == selectedId) 12.dp.toPx() else 8.dp.toPx(), center = Offset(size.width / 2f, size.height / 2f))
                     }
                     if (scheme.id == selectedId) Icon(Icons.Outlined.Check, null, tint = Color.White)
                 }

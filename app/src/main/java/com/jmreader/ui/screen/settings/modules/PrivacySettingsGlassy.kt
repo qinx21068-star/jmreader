@@ -42,19 +42,19 @@ fun PrivacySettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier:
             LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
                     RikkaSettingsGroup("应用锁") {
-                        RikkaSettingsItem("启用应用锁", "从后台返回时验证指纹或密码", trailingContent = { Switch(checked = settings.appLockEnabled, onCheckedChange = { scope.launch { container.settingsStore.setAppLockEnabled(it) } } })
+                        RikkaSettingsItem("启用应用锁", "从后台返回时验证指纹或密码", trailingContent = { Switch(checked = settings.appLockEnabled, onCheckedChange = { scope.launch { container.settingsStore.setAppLockEnabled(it) } }) }),
                         if (settings.appLockEnabled) RikkaSettingsItem("设置 PIN 码", if (settings.appLockPin == null) "使用生物识别" else "已设置 PIN (${settings.appLockPin!!.length} 位)", onClick = { showPinDialog = true })
                     }
                 }
                 item {
                     RikkaSettingsGroup("浏览记录") {
-                        RikkaSettingsItem("隐身模式", "不记录浏览历史、阅读进度和搜索历史", trailingContent = { Switch(checked = settings.incognito, onCheckedChange = { scope.launch { container.settingsStore.setIncognito(it) } } })
-                        RikkaSettingsItem("记录搜索历史", "保存搜索关键词", trailingContent = { Switch(checked = settings.saveSearchHistory, enabled = !settings.incognito, onCheckedChange = { scope.launch { container.settingsStore.setSaveSearchHistory(it) } } })
+                        RikkaSettingsItem("隐身模式", "不记录浏览历史、阅读进度和搜索历史", trailingContent = { Switch(checked = settings.incognito, onCheckedChange = { scope.launch { container.settingsStore.setIncognito(it) } }) }),
+                        RikkaSettingsItem("记录搜索历史", "保存搜索关键词", trailingContent = { Switch(checked = settings.saveSearchHistory, enabled = !settings.incognito, onCheckedChange = { scope.launch { container.settingsStore.setSaveSearchHistory(it) } }) }),
                     }
                 }
                 item {
                     RikkaSettingsGroup("屏幕安全") {
-                        RikkaSettingsItem("屏蔽截图", "防止截图和录屏", trailingContent = { Switch(checked = settings.blockScreenshots, onCheckedChange = { scope.launch { container.settingsStore.setBlockScreenshots(it) } } })
+                        RikkaSettingsItem("屏蔽截图", "防止截图和录屏", trailingContent = { Switch(checked = settings.blockScreenshots, onCheckedChange = { scope.launch { container.settingsStore.setBlockScreenshots(it) } }) }),
                     }
                 }
             }
