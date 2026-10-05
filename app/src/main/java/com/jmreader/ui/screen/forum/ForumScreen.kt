@@ -3,6 +3,7 @@
 package com.jmreader.ui.screen.forum
 
 import com.jmreader.ui.components.GlassyScaffold
+import com.jmreader.ui.components.listItemAnimationSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -313,7 +313,7 @@ private fun ForumListContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         itemsIndexed(comments, key = { i, c -> c.cid.ifBlank { "idx_$i" } }) { _, c ->
-            ForumCommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItem())
+            ForumCommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItemPlacement(listItemAnimationSpec()))
         }
         // 分页栏：首页 / 上一页 / 页码(可点跳页) / 下一页 / 末页
         item(key = "pagination") {

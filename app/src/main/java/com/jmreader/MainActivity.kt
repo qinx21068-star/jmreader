@@ -25,6 +25,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.jmreader.data.local.AnimationSpeed
 import com.jmreader.notification.ReadLaterServiceController
 import com.jmreader.ui.components.DisclaimerDialog
 import com.jmreader.ui.nav.JMApp
@@ -205,6 +206,12 @@ class MainActivity : FragmentActivity() {
             val coverAspectRatio by remember { derivedStateOf { s.coverAspectRatio } }
             val disclaimerAccepted by remember { derivedStateOf { s.disclaimerAccepted } }
             val splashAnimEnabled by remember { derivedStateOf { s.splashAnim } }
+            val animationSpeed by remember { derivedStateOf { s.animationSpeed } }
+            val splashDuration = when (animationSpeed) {
+                AnimationSpeed.DISABLED -> 0
+                AnimationSpeed.FAST -> 150
+                AnimationSpeed.NORMAL -> 300
+            }
 
             // 首次启动免责声明弹窗：未同意时显示，5 秒倒计时强制阅读。
             // 一旦用户同意（disclaimerAccepted=true），后续启动不再显示。
@@ -243,9 +250,9 @@ class MainActivity : FragmentActivity() {
                     // splashAnim=true 时主界面从 alpha=0 渐显到 1（300ms），与 splash 退出动画衔接。
                     // 关闭则直接显示。
                     val alphaAnim = remember { Animatable(if (splashAnimEnabled) 0f else 1f) }
-                    LaunchedEffect(splashAnimEnabled) {
+                    LaunchedEffect(splashAnimEnabled, splashDuration) {
                         if (splashAnimEnabled) {
-                            alphaAnim.animateTo(1f, tween(durationMillis = 300))
+                            alphaAnim.animateTo(1f, tween(durationMillis = splashDuration))
                         }
                     }
                     Box(

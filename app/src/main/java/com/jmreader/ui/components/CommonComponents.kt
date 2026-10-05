@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -234,7 +233,7 @@ private fun ComicListColumn(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                 )
             } else {
                 ComicCard(
@@ -242,7 +241,7 @@ private fun ComicListColumn(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                 )
             }
         }
@@ -328,7 +327,7 @@ private fun ComicListGrid(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                 )
             } else {
                 ComicGridCard(
@@ -336,7 +335,7 @@ private fun ComicListGrid(
                     onClick = click,
                     onLongClick = longClick,
                     coverHidden = coverHidden,
-                    modifier = Modifier.animateItem(),
+                    modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                 )
             }
         }

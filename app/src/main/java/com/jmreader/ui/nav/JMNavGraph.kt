@@ -23,6 +23,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ import androidx.navigation.navArgument
 import com.jmreader.R
 import com.jmreader.data.AppContainer
 import com.jmreader.data.local.AnimationSpeed
+import com.jmreader.ui.components.LocalAppSettings
 import com.jmreader.ui.screen.author.AuthorScreen
 import com.jmreader.ui.screen.comment.CommentsScreen
 import com.jmreader.ui.screen.detail.DetailScreen
@@ -158,6 +160,7 @@ fun JMApp(container: AppContainer) {
         // 使用 Material Motion 推荐的缓动曲线（FastOutSlowInEasing）
         // Tab 切换：纯淡入淡出（轻量）
         // 详情/设置：淡入淡出 + 向上滑入（压栈语义）
+        CompositionLocalProvider(LocalAppSettings provides settings) {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
@@ -178,7 +181,7 @@ fun JMApp(container: AppContainer) {
                             ),
                             initialOffsetY = { it / 10 } // 从底部 10% 位置滑入
                         ) + androidx.compose.animation.fadeIn(
-                            animationSpec = androidx.compose.animation.core.tween(300)
+                            animationSpec = androidx.compose.animation.core.tween(motionDuration)
                         )
                     }
                     else -> {
@@ -204,7 +207,7 @@ fun JMApp(container: AppContainer) {
             popEnterTransition = {
                 // 返回时重新进入：淡入
                 androidx.compose.animation.fadeIn(
-                    animationSpec = androidx.compose.animation.core.tween(250)
+                    animationSpec = androidx.compose.animation.core.tween(motionDuration)
                 )
             },
             popExitTransition = {
@@ -216,7 +219,7 @@ fun JMApp(container: AppContainer) {
                     ),
                     targetOffsetY = { it / 10 }
                 ) + androidx.compose.animation.fadeOut(
-                    animationSpec = androidx.compose.animation.core.tween(250)
+                    animationSpec = androidx.compose.animation.core.tween(motionDuration)
                 )
             },
         ) {
@@ -407,6 +410,7 @@ fun JMApp(container: AppContainer) {
                     onOpenLogs = { navController.navigate(Routes.LOGS) },
                 )
             }
+        }
         }
     }
 }

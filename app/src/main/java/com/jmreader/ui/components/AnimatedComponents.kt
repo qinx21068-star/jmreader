@@ -19,6 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jmreader.data.local.AnimationSpeed
+
+@Composable
+private fun animationDuration(baseDuration: Int): Int = when (LocalAppSettings.current?.animationSpeed) {
+    AnimationSpeed.DISABLED -> 0
+    AnimationSpeed.FAST -> (baseDuration / 2).coerceAtLeast(1)
+    else -> baseDuration
+}
 
 /**
  * Material 3 动画组件集
@@ -47,14 +55,22 @@ fun AnimatedClickableCard(
     content: @Composable () -> Unit,
 ) {
     var isPressed by remember { mutableStateOf(false) }
+    val animationSpeed = LocalAppSettings.current?.animationSpeed ?: AnimationSpeed.NORMAL
+    val scaleSpec = when (animationSpeed) {
+        AnimationSpeed.DISABLED -> snap()
+        AnimationSpeed.FAST -> spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        )
+        AnimationSpeed.NORMAL -> spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow,
+        )
+    }
     
-    // 使用 Spring 动画实现流畅的缩放效果
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
+        animationSpec = scaleSpec,
         label = "card_scale"
     )
     
@@ -99,20 +115,25 @@ fun ShimmerBox(
     content: @Composable () -> Unit = {},
 ) {
     if (isLoading) {
-        val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
-        
-        val shimmerTranslate by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = 1000f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 1200,
-                    easing = LinearEasing
+        val speed = LocalAppSettings.current?.animationSpeed ?: AnimationSpeed.NORMAL
+        val shimmerTranslateState: State<Float> = if (speed == AnimationSpeed.DISABLED) {
+            remember { mutableFloatStateOf(0f) }
+        } else {
+            val shimmerDuration = if (speed == AnimationSpeed.FAST) 600 else 1200
+            rememberInfiniteTransition(label = "shimmer").animateFloat(
+                initialValue = 0f,
+                targetValue = 1000f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = shimmerDuration,
+                        easing = LinearEasing
+                    ),
+                    repeatMode = RepeatMode.Restart
                 ),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "shimmer_translate"
-        )
+                label = "shimmer_translate"
+            )
+        }
+        val shimmerTranslate by shimmerTranslateState
         
         Box(
             modifier = modifier
@@ -152,10 +173,18 @@ fun ShimmerBox(
  */
 // Note: animateItemPlacement() 是 LazyItemScope 的扩展函数，由 Compose 提供
 // 这里提供一个辅助函数用于自定义动画参数
-fun listItemAnimationSpec() = spring<IntOffset>(
-    dampingRatio = Spring.DampingRatioLowBouncy,
-    stiffness = Spring.StiffnessLow
-)
+@Composable
+fun listItemAnimationSpec(): FiniteAnimationSpec<IntOffset> = when (LocalAppSettings.current?.animationSpeed) {
+    com.jmreader.data.local.AnimationSpeed.DISABLED -> tween(durationMillis = 0)
+    com.jmreader.data.local.AnimationSpeed.FAST -> spring(
+        dampingRatio = Spring.DampingRatioLowBouncy,
+        stiffness = Spring.StiffnessMedium,
+    )
+    else -> spring(
+        dampingRatio = Spring.DampingRatioLowBouncy,
+        stiffness = Spring.StiffnessLow,
+    )
+}
 
 /**
  * 带淡入效果的内容容器
@@ -170,10 +199,11 @@ fun FadeInContent(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val duration = animationDuration(300)
     val alpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
         animationSpec = tween(
-            durationMillis = 300,
+            durationMillis = duration,
             easing = FastOutSlowInEasing
         ),
         label = "fade_in"
@@ -201,19 +231,29 @@ fun SlideInContent(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val speed = LocalAppSettings.current?.animationSpeed ?: AnimationSpeed.NORMAL
+    val duration = animationDuration(300)
+    val offsetSpec = when (speed) {
+        AnimationSpeed.DISABLED -> snap()
+        AnimationSpeed.FAST -> spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh,
+        )
+        AnimationSpeed.NORMAL -> spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        )
+    }
     val offsetY by animateDpAsState(
         targetValue = if (visible) 0.dp else 20.dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
+        animationSpec = offsetSpec,
         label = "slide_in"
     )
     
     val alpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
         animationSpec = tween(
-            durationMillis = 300,
+            durationMillis = duration,
             easing = FastOutSlowInEasing
         ),
         label = "slide_in_alpha"

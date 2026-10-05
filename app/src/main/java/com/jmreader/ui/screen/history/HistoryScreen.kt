@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.jmreader.ui.screen.history
 
@@ -19,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -52,6 +54,7 @@ import coil.request.ImageRequest
 import com.jmreader.data.AppContainer
 import com.jmreader.data.local.HistoryEntry
 import com.jmreader.ui.components.EmptyBox
+import com.jmreader.ui.components.listItemAnimationSpec
 import com.jmreader.ui.nav.Routes
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -140,7 +143,7 @@ fun ReadingHistoryTab(
                         entry = entry,
                         onClick = onClick,
                         onRemove = onRemove,
-                        modifier = Modifier.animateItem(),
+                        modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                     )
                 }
                 // 底部清空按钮 + 条数提示

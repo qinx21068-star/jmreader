@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.jmreader.ui.screen.downloads
 
@@ -16,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
@@ -56,6 +58,7 @@ import com.jmreader.data.download.DownloadStatus
 import com.jmreader.data.download.DownloadTask
 import com.jmreader.ui.components.EmptyBox
 import com.jmreader.ui.components.GlassyScaffold
+import com.jmreader.ui.components.listItemAnimationSpec
 import com.jmreader.ui.nav.Routes
 import kotlinx.coroutines.launch
 
@@ -180,7 +183,7 @@ fun DownloadsScreen(container: AppContainer, navController: NavController) {
                             onOpen = onOpen,
                             onRetry = onRetry,
                             onDelete = onDelete,
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateItemPlacement(listItemAnimationSpec()),
                         )
                     }
                 }

@@ -6,6 +6,7 @@
 package com.jmreader.ui.screen.detail
 
 import com.jmreader.ui.components.GlassyScaffold
+import com.jmreader.ui.components.listItemAnimationSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
@@ -27,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -827,7 +827,7 @@ private fun DetailContent(
             // 整行可点击进入阅读（之前只有内嵌 Button 可点，点空白处无反应）
             Row(
                 Modifier
-                    .animateItem()
+                    .animateItemPlacement(listItemAnimationSpec())
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
@@ -938,7 +938,7 @@ private fun RelatedComicsRow(
         ) {
             itemsIndexed(comics, key = { i, c -> c.id.ifBlank { "idx_$i" } }) { _, c ->
                 val click = remember(c, onOpenComic) { { onOpenComic(c.id) } }
-                RelatedComicCard(c, onClick = click, modifier = Modifier.animateItem())
+                RelatedComicCard(c, onClick = click, modifier = Modifier.animateItemPlacement(listItemAnimationSpec()))
             }
         }
     }

@@ -15,7 +15,12 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.jmreader.data.local.AnimationSpeed
+import com.jmreader.data.local.AppSettings
+import com.jmreader.data.local.GlassBlurStrength
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +34,14 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+
+val LocalAppSettings = compositionLocalOf<AppSettings?> { null }
+
+private fun motionDuration(speed: AnimationSpeed?, baseDuration: Int): Int = when (speed) {
+    AnimationSpeed.DISABLED -> 0
+    AnimationSpeed.FAST -> (baseDuration / 2).coerceAtLeast(1)
+    AnimationSpeed.NORMAL, null -> baseDuration
+}
 
 /**
  * RikkaHub 同款 - 毛玻璃卡片组件
@@ -47,10 +60,11 @@ fun GlassyCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val duration = motionDuration(LocalAppSettings.current?.animationSpeed, 300)
     // 使用实心卡片，不应用模糊效果
     // 毛玻璃效果应该只用在顶部导航栏等浮动元素
     val cardModifier = modifier
-        .animateContentSize()
+        .animateContentSize(animationSpec = tween(duration))
         .clip(shape)
         .background(backgroundColor)
     
@@ -76,18 +90,25 @@ fun GlassyCard(
 fun GlassyTopAppBar(
     title: String,
     hazeState: HazeState? = null,
-    blurRadius: Dp = 30.dp,
-    glassEnabled: Boolean = true,
+    blurRadius: Dp? = null,
+    glassEnabled: Boolean? = null,
     navigationIcon: ImageVector = Icons.AutoMirrored.Outlined.ArrowBack,
     onNavigationClick: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val appBarModifier = if (glassEnabled && hazeState != null) {
+    val settings = LocalAppSettings.current
+    val resolvedGlassEnabled = glassEnabled ?: settings?.glassBackgroundEnabled ?: true
+    val resolvedBlurRadius = blurRadius ?: when (settings?.glassBlurStrength ?: GlassBlurStrength.MEDIUM) {
+        GlassBlurStrength.LOW -> 15.dp
+        GlassBlurStrength.MEDIUM -> 30.dp
+        GlassBlurStrength.HIGH -> 45.dp
+    }
+    val appBarModifier = if (resolvedGlassEnabled && hazeState != null) {
         modifier.hazeChild(
             state = hazeState,
             style = HazeStyle(
-                blurRadius = blurRadius,
+                blurRadius = resolvedBlurRadius,
                 tint = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),
             )
         )
@@ -213,10 +234,11 @@ fun GlassySwitch(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val duration = motionDuration(LocalAppSettings.current?.animationSpeed, 180)
     val switchTrackColor by animateColorAsState(
         targetValue = if (checked) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surfaceVariant,
-        animationSpec = tween(180),
+        animationSpec = tween(duration),
         label = "switch_track",
     )
     GlassyCard(
@@ -228,7 +250,7 @@ fun GlassySwitch(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .animateContentSize(),
+                .animateContentSize(animationSpec = tween(duration)),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -287,9 +309,10 @@ fun GlassySlider(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val duration = motionDuration(LocalAppSettings.current?.animationSpeed, 120)
     val animatedValue by animateFloatAsState(
         targetValue = value,
-        animationSpec = tween(120),
+        animationSpec = tween(duration),
         label = "slider_value",
     )
     GlassyCard(
@@ -366,10 +389,18 @@ fun GlassyScaffold(
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val hazeState = remember { HazeState() }
+    val settings = LocalAppSettings.current
+    val blurRadius = when (settings?.glassBlurStrength ?: GlassBlurStrength.MEDIUM) {
+        GlassBlurStrength.LOW -> 15.dp
+        GlassBlurStrength.MEDIUM -> 30.dp
+        GlassBlurStrength.HIGH -> 45.dp
+    }
+    val glassEnabled = settings?.glassBackgroundEnabled != false
     
     Scaffold(
         topBar = {
@@ -378,24 +409,32 @@ fun GlassyScaffold(
                 onNavigationClick = onNavigationClick,
                 navigationIcon = navigationIcon,
                 hazeState = hazeState,
+                blurRadius = blurRadius,
+                glassEnabled = glassEnabled,
                 actions = actions
             )
         },
         floatingActionButton = floatingActionButton,
+        bottomBar = bottomBar,
         snackbarHost = snackbarHost,
         modifier = modifier
     ) { paddingValues ->
+        val backgroundModifier = if (glassEnabled) {
+            Modifier.background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                )
+            )
+        } else {
+            Modifier.background(MaterialTheme.colorScheme.background)
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.surfaceContainer,
-                        ),
-                    )
-                )
+                .then(backgroundModifier)
                 .haze(state = hazeState)
         ) {
             content(paddingValues)
@@ -413,19 +452,24 @@ fun GlassyBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val backgroundModifier = if (LocalAppSettings.current?.glassBackgroundEnabled != false) {
+        Modifier.background(
+            Brush.verticalGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.background,
+                    MaterialTheme.colorScheme.surfaceContainer,
+                ),
+                startY = 0f,
+                endY = 1000f,
+            )
+        )
+    } else {
+        Modifier.background(MaterialTheme.colorScheme.background)
+    }
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surfaceContainer,
-                    ),
-                    startY = 0f,
-                    endY = 1000f
-                )
-            )
+            .then(backgroundModifier)
     ) {
         content()
     }

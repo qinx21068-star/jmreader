@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -63,6 +62,7 @@ import com.jmreader.data.AppContainer
 import com.jmreader.data.dto.JmCommentDto
 import com.jmreader.data.repository.Resource
 import com.jmreader.ui.components.GlassyScaffold
+import com.jmreader.ui.components.listItemAnimationSpec
 import com.jmreader.ui.screen.forum.JmLinkedText
 import com.jmreader.ui.screen.forum.LoadingShield
 import kotlinx.coroutines.CancellationException
@@ -292,7 +292,7 @@ private fun CommentsListContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         itemsIndexed(comments, key = { i, c -> c.cid.ifBlank { "idx_$i" } }) { _, c ->
-            CommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItem())
+            CommentCard(comment = c, onOpenComic = onOpenComic, modifier = Modifier.animateItemPlacement(listItemAnimationSpec()))
         }
         // 分页栏：首页 / 上一页 / 页码(可点跳页) / 下一页 / 末页
         item(key = "pagination") {

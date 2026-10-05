@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.jmreader.ui.screen.logs
 
@@ -13,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -45,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jmreader.core.Logger
 import com.jmreader.ui.components.GlassyScaffold
+import com.jmreader.ui.components.listItemAnimationSpec
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -140,7 +143,7 @@ fun LogsScreen(onBack: () -> Unit) {
                 }
             }
             items(shown, key = { it.seq }) { e ->
-                LogRow(e, modifier = Modifier.animateItem(), onCopy = { msg ->
+                LogRow(e, modifier = Modifier.animateItemPlacement(listItemAnimationSpec()), onCopy = { msg ->
                     val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
                     cm?.setPrimaryClip(android.content.ClipData.newPlainText("log", msg))
                     scope.launch { snackbar.showSnackbar("已复制") }
