@@ -206,7 +206,7 @@ fun FadeInContent(
             durationMillis = duration,
             easing = FastOutSlowInEasing
         ),
-        label = "fade_in"
+        label = "fade_in",
     )
     
     Box(
