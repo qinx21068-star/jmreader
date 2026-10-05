@@ -71,45 +71,32 @@ fun ColorSchemePicker(
     onPickCustom: (CustomColors) -> Unit,
 ) {
     var showCustomDialog by remember { mutableStateOf(false) }
-
-    Text(
-        "配色方案",
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Medium,
-    )
-    Text(
-        "8 套预设 + 自定义颜色，一键切换全局视觉风格",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 2.dp),
-    )
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(PresetSchemes, key = { it.id }) { scheme ->
-            SchemeCard(
-                scheme = scheme,
-                selected = currentId == scheme.id,
-                enabled = enabled,
-                onClick = { onPickPreset(scheme.id) },
-            )
+    Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("自定义主题", style = MaterialTheme.typography.titleSmall)
+        Text("导入或新建颜色方案，应用后会生成完整 Material 3 配色", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedButton(enabled = enabled, onClick = { showCustomDialog = true }) {
+                Icon(Icons.Outlined.Palette, contentDescription = null)
+                Spacer(Modifier.width(6.dp))
+                Text(if (customColors == null) "新建" else "编辑")
+            }
+            OutlinedButton(enabled = enabled, onClick = { showCustomDialog = true }) {
+                Icon(Icons.Outlined.Image, contentDescription = null)
+                Spacer(Modifier.width(6.dp))
+                Text("导入")
+            }
         }
-        item(key = CUSTOM_SCHEME_ID) {
-            CustomSchemeCard(
-                selected = currentId == CUSTOM_SCHEME_ID,
-                enabled = enabled,
-                customColors = customColors,
-                onClick = {
-                    // 直接打开对话框；首次进入用当前主题色作为初始值
-                    showCustomDialog = true
-                },
-            )
+        if (customColors != null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                listOf(customColors.primary, customColors.primaryContainer, customColors.secondary, customColors.surface).forEach { color ->
+                    Box(Modifier.size(36.dp).clip(CircleShape).background(color).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape))
+                }
+                Text(if (currentId == CUSTOM_SCHEME_ID) "当前使用" else "已保存", style = MaterialTheme.typography.labelMedium)
+            }
+        } else {
+            Text("暂无自定义主题", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
-
     if (showCustomDialog) {
         CustomColorDialog(
             initial = customColors ?: CustomColors(
@@ -120,10 +107,7 @@ fun ColorSchemePicker(
                 surface = MaterialTheme.colorScheme.surface,
                 surfaceVariant = MaterialTheme.colorScheme.surfaceVariant,
             ),
-            onConfirm = {
-                onPickCustom(it)
-                showCustomDialog = false
-            },
+            onConfirm = { onPickCustom(it); showCustomDialog = false },
             onDismiss = { showCustomDialog = false },
         )
     }
