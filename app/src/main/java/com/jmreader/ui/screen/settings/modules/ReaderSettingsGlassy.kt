@@ -36,7 +36,7 @@ fun ReaderSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier: 
     val scope = rememberCoroutineScope()
     Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = { GlassyTopAppBar("阅读器设置", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) }) { padding ->
         RikkaGradientBackground(modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
                     RikkaSettingsGroup("翻页方式") {
                         RikkaChoiceItem("阅读方向", settings.readerDirection.name, listOf("左右" to (settings.readerDirection == ReaderDirection.HORIZONTAL_LR), "上下" to (settings.readerDirection == ReaderDirection.VERTICAL), "右左" to (settings.readerDirection == ReaderDirection.HORIZONTAL_RL))) { label -> scope.launch { container.settingsStore.setReaderDirection(when (label) { "左右" -> ReaderDirection.HORIZONTAL_LR; "右左" -> ReaderDirection.HORIZONTAL_RL; else -> ReaderDirection.VERTICAL }) } }

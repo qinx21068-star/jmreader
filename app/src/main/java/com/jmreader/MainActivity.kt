@@ -203,6 +203,9 @@ class MainActivity : FragmentActivity() {
             val cardElevation by remember { derivedStateOf { s.cardElevation } }
             val listTitleFontSize by remember { derivedStateOf { s.listTitleFontSize } }
             val listBodyFontSize by remember { derivedStateOf { s.listBodyFontSize } }
+            val listItemSpacing by remember { derivedStateOf { s.listItemSpacing } }
+            val listCoverRadius by remember { derivedStateOf { s.listCoverRadius } }
+            val listCardRadius by remember { derivedStateOf { s.listCardRadius } }
             val coverAspectRatio by remember { derivedStateOf { s.coverAspectRatio } }
             val disclaimerAccepted by remember { derivedStateOf { s.disclaimerAccepted } }
             val splashAnimEnabled by remember { derivedStateOf { s.splashAnim } }
@@ -241,6 +244,9 @@ class MainActivity : FragmentActivity() {
                 cardElevation = cardElevation,
                 listTitleFontSize = listTitleFontSize,
                 listBodyFontSize = listBodyFontSize,
+                listItemSpacing = listItemSpacing,
+                listCoverRadius = listCoverRadius,
+                listCardRadius = listCardRadius,
                 coverAspectRatio = coverAspectRatio,
             ) {
                 // 关键修复：未同意免责声明前不渲染主界面（避免在声明未同意时操作各功能，合规风险）。

@@ -26,7 +26,7 @@ import com.jmreader.ui.components.RikkaSettingsItem
 fun AboutSettingsGlassy(container: AppContainer, onBack: () -> Unit, onOpenLogs: () -> Unit = {}, modifier: Modifier = Modifier) {
     Scaffold(containerColor = MaterialTheme.colorScheme.background, topBar = { GlassyTopAppBar("关于", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) }) { padding ->
         RikkaGradientBackground(modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
                     RikkaSettingsGroup("应用信息") {
                         RikkaSettingsItem("JMReader", "v29.0 · Material 3 Edition")

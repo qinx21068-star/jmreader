@@ -188,6 +188,7 @@ private fun ComicListColumn(
     header: (@androidx.compose.runtime.Composable () -> Unit)? = null,
     coverHiddenIds: Set<String> = emptySet(),
 ) {
+    val listItemSpacing = com.jmreader.ui.theme.LocalListItemSpacing.current
     // v27.6：header 占 1 个 index，触底阈值需 +1 偏移
     val headerOffset = if (header != null) 1 else 0
     // 触底加载：列表 + footer，footer 占 1 个 index，阈值用 items.size - 3。
@@ -205,7 +206,7 @@ private fun ComicListColumn(
         state = state,
         modifier = modifier.fillMaxSize(),
         contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(listItemSpacing.dp),
     ) {
         // v27.6：可选 header（筛选条等），随列表滚动移出视野
         if (header != null) {
@@ -286,6 +287,7 @@ private fun ComicListGrid(
     header: (@androidx.compose.runtime.Composable () -> Unit)? = null,
     coverHiddenIds: Set<String> = emptySet(),
 ) {
+    val listItemSpacing = com.jmreader.ui.theme.LocalListItemSpacing.current
     // v27.6：header 占 1 个 index，触底阈值需 +1 偏移
     val headerOffset = if (header != null) 1 else 0
     // 触底加载：footer 跨整行占 1 个 index，阈值用 items.size - columns*2（约两行提前量）
@@ -305,7 +307,7 @@ private fun ComicListGrid(
         modifier = modifier.fillMaxSize(),
         contentPadding = contentPadding,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(listItemSpacing.dp),
     ) {
         // v27.6：可选 header，跨整行显示
         if (header != null) {
@@ -449,7 +451,9 @@ fun ComicCard(
 
     // v27.5：用 MaterialTheme.shapes.medium（由 JMTheme 根据 cardCornerRadius 设置动态生成），
     // 让设置页圆角滑块真正生效。之前硬编码 14.dp 导致设置项无效。
-    val cardShape = MaterialTheme.shapes.medium
+    val listCoverRadius = com.jmreader.ui.theme.LocalListCoverRadius.current
+    val listCardRadius = com.jmreader.ui.theme.LocalListCardRadius.current
+    val cardShape = RoundedCornerShape(listCardRadius.dp)
     // v27.5：阴影从 LocalCardElevation 取（设置页"卡片阴影"滑块全局生效）。
     // shadow 必须在 background 之前，否则阴影会被 background 覆盖。
     val cardElevation = com.jmreader.ui.theme.LocalCardElevation.current
@@ -482,7 +486,7 @@ fun ComicCard(
         val coverModifier = Modifier
             .width(76.dp)
             .aspectRatio(coverRatio)
-            .clip(CoverClipShape)
+            .clip(RoundedCornerShape(listCoverRadius.dp))
         if (coverHidden) {
             BlockedCover(modifier = coverModifier)
         } else if (cover.isNullOrBlank()) {
@@ -594,7 +598,9 @@ fun ComicGridCard(
 ) {
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
     val placeholderColor = MaterialTheme.colorScheme.surface
-    val cardShape = MaterialTheme.shapes.medium
+    val listCoverRadius = com.jmreader.ui.theme.LocalListCoverRadius.current
+    val listCardRadius = com.jmreader.ui.theme.LocalListCardRadius.current
+    val cardShape = RoundedCornerShape(listCardRadius.dp)
     val cardElevation = com.jmreader.ui.theme.LocalCardElevation.current
     val titleFontSize = com.jmreader.ui.theme.LocalListTitleFontSize.current
     val bodyFontSize = com.jmreader.ui.theme.LocalListBodyFontSize.current
@@ -619,7 +625,7 @@ fun ComicGridCard(
         val coverModifier = Modifier
             .fillMaxWidth()
             .aspectRatio(coverRatio)
-            .clip(CoverClipShape)
+            .clip(RoundedCornerShape(listCoverRadius.dp))
         if (coverHidden) {
             BlockedCover(modifier = coverModifier)
         } else if (cover.isNullOrBlank()) {
@@ -701,7 +707,9 @@ fun ComicCardStyle(
 ) {
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
     val placeholderColor = MaterialTheme.colorScheme.surface
-    val cardShape = MaterialTheme.shapes.medium
+    val listCoverRadius = com.jmreader.ui.theme.LocalListCoverRadius.current
+    val listCardRadius = com.jmreader.ui.theme.LocalListCardRadius.current
+    val cardShape = RoundedCornerShape(listCardRadius.dp)
     val cardElevation = com.jmreader.ui.theme.LocalCardElevation.current
     val titleFontSize = com.jmreader.ui.theme.LocalListTitleFontSize.current
     val bodyFontSize = com.jmreader.ui.theme.LocalListBodyFontSize.current
@@ -727,7 +735,7 @@ fun ComicCardStyle(
         val coverModifier = Modifier
             .fillMaxWidth()
             .aspectRatio(coverRatio)
-            .clip(CoverClipShape)
+            .clip(RoundedCornerShape(listCoverRadius.dp))
         if (coverHidden) {
             BlockedCover(modifier = coverModifier)
         } else if (cover.isNullOrBlank()) {
@@ -826,7 +834,9 @@ fun ComicMagazineCard(
 ) {
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
     val placeholderColor = MaterialTheme.colorScheme.surface
-    val cardShape = MaterialTheme.shapes.medium
+    val listCoverRadius = com.jmreader.ui.theme.LocalListCoverRadius.current
+    val listCardRadius = com.jmreader.ui.theme.LocalListCardRadius.current
+    val cardShape = RoundedCornerShape(listCardRadius.dp)
     val cardElevation = com.jmreader.ui.theme.LocalCardElevation.current
     val titleFontSize = com.jmreader.ui.theme.LocalListTitleFontSize.current
     val bodyFontSize = com.jmreader.ui.theme.LocalListBodyFontSize.current
@@ -851,7 +861,7 @@ fun ComicMagazineCard(
         val coverModifier = Modifier
             .fillMaxWidth()
             .aspectRatio(coverRatio)
-            .clip(CoverClipShape)
+            .clip(RoundedCornerShape(listCoverRadius.dp))
         if (coverHidden) {
             BlockedCover(modifier = coverModifier)
         } else if (cover.isNullOrBlank()) {

@@ -53,6 +53,10 @@ val LocalCardElevation = androidx.compose.runtime.compositionLocalOf { 1.dp }
  */
 val LocalListTitleFontSize = androidx.compose.runtime.compositionLocalOf { 13f }
 val LocalListBodyFontSize = androidx.compose.runtime.compositionLocalOf { 12f }
+/** 列表项目间距与卡片/封面圆角，由列表设置控制。 */
+val LocalListItemSpacing = androidx.compose.runtime.compositionLocalOf { 12f }
+val LocalListCoverRadius = androidx.compose.runtime.compositionLocalOf { 8f }
+val LocalListCardRadius = androidx.compose.runtime.compositionLocalOf { 12f }
 /** 封面宽高比（宽/高），如 2:3 → 0.6667f */
 val LocalCoverAspectRatio = androidx.compose.runtime.compositionLocalOf { 0.7f }
 /** 全局 Haze 模糊半径，由外观设置控制。 */
@@ -158,6 +162,9 @@ fun JMTheme(
     cardElevation: Float = 1f,
     listTitleFontSize: Float = 13f,
     listBodyFontSize: Float = 12f,
+    listItemSpacing: Float = 12f,
+    listCoverRadius: Float = 8f,
+    listCardRadius: Float = 12f,
     coverAspectRatio: String = "2:3",
     content: @Composable () -> Unit,
 ) {
@@ -242,6 +249,9 @@ fun JMTheme(
         LocalCardElevation provides cardElevation.dp,
         LocalListTitleFontSize provides listTitleFontSize,
         LocalListBodyFontSize provides listBodyFontSize,
+        LocalListItemSpacing provides listItemSpacing,
+        LocalListCoverRadius provides listCoverRadius,
+        LocalListCardRadius provides listCardRadius,
         LocalCoverAspectRatio provides coverRatio,
     ) {
         MaterialTheme(

@@ -37,7 +37,7 @@ fun DownloadSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier
         topBar = { GlassyTopAppBar("下载设置", navigationIcon = Icons.AutoMirrored.Outlined.ArrowBack, onNavigationClick = onBack) },
     ) { padding ->
         RikkaGradientBackground(modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 item {
                     RikkaSettingsGroup("下载性能") {
                         RikkaSliderItem("并发下载数", settings.downloadConcurrency.toFloat(), 1f..4f, "${settings.downloadConcurrency} 个") { value -> scope.launch { container.settingsStore.setDownloadConcurrency(value.toInt()) } }
