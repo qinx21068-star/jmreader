@@ -68,7 +68,7 @@ fun NetworkSettingsGlassy(container: AppContainer, onBack: () -> Unit, modifier:
                         RikkaSettingsItem(
                             "强制最高刷新率",
                             "锁定屏幕最高刷新率（更流畅但更耗电）",
-                            trailingContent = { Switch(settings.preferMaxRefreshRate) { scope.launch { container.settingsStore.setPreferMaxRefreshRate(it) } } },
+                            trailingContent = { Switch(checked = settings.preferMaxRefreshRate, onCheckedChange = { scope.launch { container.settingsStore.setPreferMaxRefreshRate(it) } } ) },
                         )
                     }
                 }

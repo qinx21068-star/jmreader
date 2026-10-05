@@ -51,7 +51,7 @@ fun RikkaGradientBackground(modifier: Modifier = Modifier, content: @Composable 
 fun RikkaSettingsGroup(title: String? = null, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         title?.let { Text(it, MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
-        Card(shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(LocalCardElevation.current), content = content)
+        Card(shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = LocalCardElevation.current), content = content)
     }
 }
 
@@ -84,7 +84,7 @@ fun RikkaSliderItem(title: String, value: Float, valueRange: ClosedFloatingPoint
 fun RikkaChoiceItem(title: String, subtitle: String, options: List<Pair<String, Boolean>>, onSelect: (String) -> Unit) {
     ListItem(
         headlineContent = { Text(title) },
-        supportingContent = { Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { options.forEach { (label, selected) -> FilterChip(selected, { onSelect(label) }, label = { Text(label) }) } } },
+        supportingContent = { Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { options.forEach { (label, selected) -> FilterChip(selected = selected, onClick = { onSelect(label) }, label = { Text(label) }) } } },
         trailingContent = { Text(subtitle) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
